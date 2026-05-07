@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>채움 MVP 프리뷰 (Modern UI)</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- 모던 폰트 (Pretendard 등 시스템 폰트 위주 사용) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+</head>
+<body>
+  <div class="phone-container">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="icons">📶 5G 🔋</span>
+    </div>
+
+    <!-- Home Screen -->
+    <div class="screen-content" id="screen-home">
+      <div class="top-nav">
+        <div class="points-badge">
+          <span class="coin-icon">🍩</span>
+          <span class="points-text" id="user-points">1,708</span>
+        </div>
+        <div class="right-icons">
+          <span class="msg-icon">✉️</span>
+        </div>
+      </div>
+      
+      <div class="main-content">
+        <div class="user-title-area">
+          <h2 class="title-text">초보 탐험가</h2>
+          <p class="subtitle-text">오늘도 힘차게 걸어봐요!</p>
+        </div>
+
+        <div class="character-container" onclick="switchTab('customization')" style="cursor: pointer;">
+          <!-- 픽셀 그래픽 캐릭터 -->
+          <div class="pixel-character"></div>
+          <p class="character-name">Charlie is walking.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map Screen -->
+    <div class="screen-content hidden" id="screen-map">
+      <div class="map-placeholder">
+        <div class="map-bg-pattern"></div>
+        <div class="marker marker-1" onclick="openBottomSheet('성수동 팝업', '최신 트렌드 팝업스토어입니다.')">
+          <div class="marker-pin"></div>
+        </div>
+        <div class="marker marker-2" onclick="openBottomSheet('한남동 카페', '분위기 좋은 감성 카페입니다.')">
+          <div class="marker-pin"></div>
+        </div>
+        <div class="marker marker-3" onclick="openBottomSheet('홍대 거리', '버스킹과 예술이 넘치는 거리입니다.')">
+          <div class="marker-pin"></div>
+        </div>
+      </div>
+
+      <div class="bottom-sheet" id="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-content">
+          <h2 id="sheet-title">장소 이름</h2>
+          <p id="sheet-desc">장소 설명</p>
+          <button class="modern-btn primary-btn" onclick="startMission()">인증 미션 시작하기</button>
+        </div>
+      </div>
+      <div class="overlay" id="sheet-overlay" onclick="closeBottomSheet()"></div>
+    </div>
+
+    <!-- Camera Screen -->
+    <div class="screen-content hidden" id="screen-camera">
+      <!-- 카메라 피사체(배경)가 적용된 카메라 뷰 -->
+      <div class="camera-view" style="background-image: url('https://images.unsplash.com/photo-1516214104703-d2507c614b15?auto=format&fit=crop&w=800&q=80'); background-size: cover; background-position: center;">
+        <div class="camera-top">
+          <button class="icon-btn" onclick="switchTab('map')">✕</button>
+        </div>
+        <div class="camera-focus"></div>
+        <div class="camera-controls">
+          <div class="control-spacer"></div>
+          <button class="shutter-btn" onclick="takePhoto()">
+            <div class="shutter-inner"></div>
+          </button>
+          <div class="gallery-preview" onclick="alert('방금 찍은 사진을 확인합니다.')">
+            <img src="https://images.unsplash.com/photo-1516214104703-d2507c614b15?auto=format&fit=crop&w=100&q=80" alt="gallery">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Loading & Success Modals -->
+      <div class="modal-overlay hidden" id="loading-modal">
+        <div class="modern-modal">
+          <div class="spinner"></div>
+          <p>AI가 방문을 확인 중입니다...</p>
+        </div>
+      </div>
+
+      <div class="modal-overlay hidden" id="success-modal">
+        <div class="modern-modal success-box">
+          <div class="success-icon">🎉</div>
+          <h2>미션 성공!</h2>
+          <p class="reward-text"><span class="highlight">+50 EXP</span> 획득</p>
+          <div class="item-reward">
+            <span>🕶️</span> 픽셀 선글라스
+          </div>
+          <button class="modern-btn primary-btn" onclick="goToUpload()">업로드하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Screen -->
+    <div class="screen-content hidden" id="screen-upload">
+      <div class="top-nav center-title">
+        <button class="icon-btn dark" onclick="switchTab('home')">✕</button>
+        <h2>업로드</h2>
+        <div class="empty-space"></div>
+      </div>
+      <div class="share-container">
+        <p class="share-desc">새로운 발견을 공유하세요!</p>
+        <div class="composite-view" id="composite-view">
+          <div class="dummy-photo" style="background: url('https://images.unsplash.com/photo-1516214104703-d2507c614b15?auto=format&fit=crop&w=600&q=80') center/cover;">
+          </div>
+          <div class="pixel-character-overlay"></div>
+        </div>
+        <button class="modern-btn primary-btn btn-full" onclick="saveImage()">인증 완료 및 업로드하기</button>
+      </div>
+    </div>
+
+    <!-- Character Customization Screen (Archero style) -->
+    <div class="screen-content hidden" id="screen-customization">
+      <div class="top-nav center-title">
+        <button class="icon-btn dark" onclick="switchTab('home')">←</button>
+        <h2>캐릭터 장비</h2>
+        <div class="empty-space"></div>
+      </div>
+      
+      <div class="customization-layout">
+        <!-- 상단 캐릭터 및 장착 슬롯 -->
+        <div class="equipment-showcase">
+          <div class="equip-col">
+            <div class="equip-slot rarity-epic"><span>🪄</span></div>
+            <div class="equip-slot empty"></div>
+            <div class="equip-slot rarity-rare"><span>💍</span></div>
+          </div>
+          
+          <div class="center-character">
+            <div class="pixel-character-large" id="pixel-char-large"></div>
+            <div class="stats-bar">
+              <span class="stat">⚔️ 2887</span>
+              <span class="stat">❤️ 10K</span>
+            </div>
+          </div>
+          
+          <div class="equip-col">
+            <div class="equip-slot rarity-epic"><span>🛡️</span></div>
+            <div class="equip-slot rarity-rare"><span>🪖</span></div>
+            <div class="equip-slot rarity-common"><span>👟</span></div>
+          </div>
+        </div>
+
+        <!-- 하단 인벤토리 -->
+        <div class="inventory-section">
+          <div class="inventory-tabs">
+            <button class="inv-tab active">장비</button>
+            <button class="inv-tab">칭호</button>
+          </div>
+          <div class="inventory-grid">
+            <div class="inv-item rarity-epic"><span>🪄</span></div>
+            <div class="inv-item rarity-rare"><span>🪖</span></div>
+            <div class="inv-item rarity-common"><span>💍</span></div>
+            <div class="inv-item rarity-epic"><span>🛡️</span></div>
+            <div class="inv-item rarity-common"><span>👟</span></div>
+            <div class="inv-item rarity-rare"><span>🏹</span></div>
+            <div class="inv-item empty"></div>
+            <div class="inv-item empty"></div>
+            <div class="inv-item empty"></div>
+            <div class="inv-item empty"></div>
+            <div class="inv-item empty"></div>
+            <div class="inv-item empty"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav" id="bottom-nav">
+      <div class="nav-item active" onclick="switchTab('home')">
+        <span class="icon">🏠</span>
+        <span class="label">홈</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('map')">
+        <span class="icon">📍</span>
+        <span class="label">지도</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('camera')">
+        <span class="icon">📷</span>
+        <span class="label">카메라</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('upload')">
+        <span class="icon">📤</span>
+        <span class="label">업로드</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
