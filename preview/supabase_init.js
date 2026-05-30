@@ -10,7 +10,11 @@
 const SUPABASE_URL  = 'YOUR_SUPABASE_URL';
 const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+// Supabase 설정 전 가드 — 플레이스홀더 상태면 클라이언트 초기화 건너뜀
+const _supabaseReady = SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON !== 'YOUR_SUPABASE_ANON_KEY';
+const supabase = _supabaseReady
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+  : null;
 
 // ── 2. UUID 생성 헬퍼 (crypto.randomUUID 미지원 브라우저 대비 폴백) ──
 function generateUUID() {
@@ -27,6 +31,7 @@ function generateUUID() {
 
 // ── 3. 앱 진입 시 유저 동기화 메인 함수 ─────────────────
 async function initUser() {
+  if (!supabase) return; // Supabase 미설정 시 건너뜀
   const STORAGE_KEY = 'device_uuid';
   let deviceUUID = localStorage.getItem(STORAGE_KEY);
 
@@ -84,16 +89,21 @@ async function initUser() {
 // initUser()는 비동기이므로, script.js의 loadState()보다 늦게 끝날 수 있음.
 // _applyDBStateToUI()가 이미 정의되어 있으면 직접 호출, 아니면 pending에 담아둠.
 function _applyUserState(userData) {
-  if (typeof _applyDBStateToUI === 'function') {
-    // script.js가 이미 로드된 경우 → 즉시 UI에 반영
-    _applyDBStateToUI(userData);
+  if (typeof applyDBPoints === 'function') {
+    // script.js가 이미 로드된 경우 → 즉시 UI에 포인트 반영
+    applyDBPoints(userData);
   } else {
-    // script.js가 아직 로드되지 않은 경우 → loadState()가 나중에 소비
+    // script.js가 아직 로드되지 않은 경우 → pending에 담아둠
     window._pendingUserState = userData;
   }
 }
 
 // ── 5. 진입점: DOM 준비 완료 후 실행 ────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  initUser();
+  // Supabase 미설정 시 initUser 건너뜀
+  if (_supabaseReady) {
+    initUser();
+  } else {
+    console.log('[Chaeum] Supabase 미설정 — 오프라인 모드로 실행');
+  }
 });
