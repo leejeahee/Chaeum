@@ -6,7 +6,7 @@
   <title>채움 — 도장깨기 MVP</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-  <!-- Supabase JS SDK (CDN) -->
+  <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Kakao Maps API -->
   <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=bc704e6eafb7cbfbf1ffc6989d74d88c"></script>
@@ -18,22 +18,86 @@
       <span class="icons">📶 5G 🔋</span>
     </div>
 
-    <!-- Map Screen (메인) -->
-    <div class="screen-content" id="screen-map">
-      <!-- 포인트 배지 -->
+    <!-- ════════════════════════════════════════
+         SCREEN: 진입 화면 (크루 선택)
+         앱 시작 시 가장 먼저 표시
+    ════════════════════════════════════════ -->
+    <div class="screen-content" id="screen-entry">
+      <div class="entry-container">
+
+        <!-- 로고 영역 -->
+        <div class="entry-logo">
+          <div class="logo-icon">🗺️</div>
+          <h1 class="logo-title">채움</h1>
+          <p class="logo-desc">우리만의 분당 도장깨기</p>
+        </div>
+
+        <!-- 버튼 영역 -->
+        <div class="entry-actions">
+          <button class="entry-btn primary-entry-btn" id="btn-create-crew" onclick="handleCreateCrew()">
+            <span class="btn-icon">✨</span>
+            <div class="btn-text-group">
+              <span class="btn-title">새 지도 만들기</span>
+              <span class="btn-desc">초대 코드를 생성하고 친구를 초대해요</span>
+            </div>
+          </button>
+
+          <div class="entry-divider"><span>또는</span></div>
+
+          <div class="invite-input-group">
+            <input
+              type="text"
+              id="invite-code-input"
+              class="invite-input"
+              placeholder="초대 코드 6자리 입력"
+              maxlength="6"
+              oninput="this.value = this.value.toUpperCase()"
+            />
+            <button class="entry-btn secondary-entry-btn" id="btn-join-crew" onclick="handleJoinCrew()">
+              <span class="btn-icon">🔑</span>
+              <div class="btn-text-group">
+                <span class="btn-title">코드로 입장하기</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- 에러 메시지 -->
+        <p class="entry-error hidden" id="entry-error"></p>
+
+        <!-- 로딩 스피너 -->
+        <div class="entry-loading hidden" id="entry-loading">
+          <div class="spinner"></div>
+          <p>지도를 불러오는 중...</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN: 지도 (메인)
+    ════════════════════════════════════════ -->
+    <div class="screen-content hidden" id="screen-map">
+      <!-- 상단 바 -->
       <div class="map-top-bar">
         <div class="points-badge">
           <span class="coin-icon">🍩</span>
-          <span class="points-text" id="user-points">1,708</span>
+          <span class="points-text" id="user-points">0</span>
         </div>
-        <div class="map-title">분당 도장깨기</div>
+        <!-- 크루 코드 공유 버튼 -->
+        <button class="crew-code-btn" id="crew-code-btn" onclick="showCrewCode()">
+          <span id="crew-name-label">지도</span>
+          <span class="share-icon">🔗</span>
+        </button>
       </div>
 
-      <!-- 카카오 지도 컨테이너 -->
+      <!-- 카카오 지도 -->
       <div id="kakao-map"></div>
     </div>
 
-    <!-- My Page Screen -->
+    <!-- ════════════════════════════════════════
+         SCREEN: 마이페이지
+    ════════════════════════════════════════ -->
     <div class="screen-content hidden" id="screen-mypage">
       <div class="top-nav">
         <h2>마이페이지</h2>
@@ -43,8 +107,10 @@
       </div>
     </div>
 
-    <!-- Bottom Navigation (GNB) -->
-    <div class="bottom-nav" id="bottom-nav">
+    <!-- ════════════════════════════════════════
+         GNB — 지도 화면일 때만 표시
+    ════════════════════════════════════════ -->
+    <div class="bottom-nav hidden" id="bottom-nav">
       <div class="nav-item active" id="nav-map" onclick="switchTab('map')">
         <span class="icon">📍</span>
         <span class="label">지도</span>
@@ -54,9 +120,24 @@
         <span class="label">마이페이지</span>
       </div>
     </div>
-  </div>
 
-  <!-- Supabase 초기화 -->
+    <!-- ════════════════════════════════════════
+         모달: 크루 코드 공유
+    ════════════════════════════════════════ -->
+    <div class="modal-backdrop hidden" id="crew-modal-backdrop" onclick="closeCrewModal()">
+      <div class="crew-modal" onclick="event.stopPropagation()">
+        <div class="crew-modal-emoji">🎉</div>
+        <h3 class="crew-modal-title">우리 지도 초대 코드</h3>
+        <p class="crew-modal-desc">친구에게 아래 코드를 공유하세요!</p>
+        <div class="crew-code-display" id="crew-code-display">------</div>
+        <button class="copy-btn" onclick="copyCrewCode()">코드 복사하기 📋</button>
+        <button class="modal-close-btn" onclick="closeCrewModal()">닫기</button>
+      </div>
+    </div>
+
+  </div><!-- /.phone-container -->
+
+  <!-- Scripts -->
   <script src="supabase_init.js"></script>
   <script src="script.js"></script>
 </body>

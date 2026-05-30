@@ -11,8 +11,9 @@ const SUPABASE_URL  = 'YOUR_SUPABASE_URL';
 const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';
 
 // Supabase 설정 전 가드 — 플레이스홀더 상태면 클라이언트 초기화 건너뜀
-const _supabaseReady = SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON !== 'YOUR_SUPABASE_ANON_KEY';
-const supabase = _supabaseReady
+window._supabaseReady = SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON !== 'YOUR_SUPABASE_ANON_KEY';
+// window.supabase는 CDN SDK가 주입한 원본 객체 → 덮어쓰지 않고 별도 변수 사용
+window._supabaseClient = window._supabaseReady
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
   : null;
 
@@ -31,7 +32,7 @@ function generateUUID() {
 
 // ── 3. 앱 진입 시 유저 동기화 메인 함수 ─────────────────
 async function initUser() {
-  if (!supabase) return; // Supabase 미설정 시 건너뜀
+  if (!window._supabaseClient) return; // Supabase 미설정 시 건너뜀
   const STORAGE_KEY = 'device_uuid';
   let deviceUUID = localStorage.getItem(STORAGE_KEY);
 
@@ -40,7 +41,7 @@ async function initUser() {
     console.log('[Chamap] 최초 진입 감지 → 새 유저 생성 중...');
     deviceUUID = generateUUID();
 
-    const { data, error } = await supabase
+    const { data, error } = await window._supabaseClient
       .from('users')
       .insert([{ id: deviceUUID }])
       .select()
@@ -61,7 +62,7 @@ async function initUser() {
     // ── 3-B. 재진입: DB에서 해당 UUID의 유저 정보 SELECT
     console.log('[Chamap] 기존 유저 감지 (UUID:', deviceUUID, ') → DB에서 상태 로드 중...');
 
-    const { data, error } = await supabase
+    const { data, error } = await window._supabaseClient
       .from('users')
       .select('*')
       .eq('id', deviceUUID)
@@ -101,7 +102,7 @@ function _applyUserState(userData) {
 // ── 5. 진입점: DOM 준비 완료 후 실행 ────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   // Supabase 미설정 시 initUser 건너뜀
-  if (_supabaseReady) {
+  if (window._supabaseReady) {
     initUser();
   } else {
     console.log('[Chaeum] Supabase 미설정 — 오프라인 모드로 실행');
