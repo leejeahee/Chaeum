@@ -135,6 +135,69 @@
       </div>
     </div>
 
+    <!-- ════════════════════════════════════════
+         모달: 점령하기 (다크소울 방명록)
+    ════════════════════════════════════════ -->
+    <div class="modal-backdrop hidden" id="conquer-modal-backdrop" onclick="closeConquerModal()">
+      <div class="conquer-modal" onclick="event.stopPropagation()">
+        <!-- 헤더 -->
+        <div class="conquer-modal-header">
+          <div class="conquer-sword-icon">⚔️</div>
+          <h3 class="conquer-modal-title">이 장소를 점령하시겠습니까?</h3>
+          <p class="conquer-place-name" id="conquer-place-name">장소명</p>
+        </div>
+
+        <!-- 드롭다운 조합형 메시지 -->
+        <div class="combo-message-builder">
+          <p class="combo-label">방명록 메시지를 조합하세요</p>
+          <div class="combo-row">
+            <!-- 1번째 선택 -->
+            <select class="combo-select" id="combo-1">
+              <option value="이 앞">이 앞</option>
+              <option value="여기">여기</option>
+            </select>
+            <!-- 2번째 선택 -->
+            <select class="combo-select" id="combo-2">
+              <option value="JMT">JMT</option>
+              <option value="사장님 텐션">사장님 텐션</option>
+              <option value="웨이팅">웨이팅</option>
+              <option value="에어컨 직빵 자리">에어컨 직빵 자리</option>
+            </select>
+            <!-- 3번째 선택 -->
+            <select class="combo-select" id="combo-3">
+              <option value="있다">있다</option>
+              <option value="조심해라">조심해라</option>
+              <option value="미쳤다">미쳤다</option>
+            </select>
+          </div>
+          <!-- 미리보기 -->
+          <div class="combo-preview" id="combo-preview">
+            "이 앞 JMT 있다"
+          </div>
+        </div>
+
+        <!-- 점령 버튼 -->
+        <button class="conquer-btn" id="conquer-submit-btn" onclick="submitConquer()">
+          <span>⚔️ 점령하기</span>
+        </button>
+        <button class="modal-close-btn" onclick="closeConquerModal()">취소</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         팝업: 점령된 도장 방명록 보기
+    ════════════════════════════════════════ -->
+    <div class="stamp-popup hidden" id="stamp-popup" onclick="closeStampPopup()">
+      <div class="stamp-popup-inner" onclick="event.stopPropagation()">
+        <div class="popup-skull">💀</div>
+        <p class="popup-place-name" id="popup-place-name">장소명</p>
+        <div class="popup-message-bubble" id="popup-message-bubble">메시지</div>
+        <p class="popup-occupier-label" id="popup-occupier-label">점령 중</p>
+        <button class="popup-reconquer-btn" id="popup-reconquer-btn" onclick="reopenConquerFromPopup()">⚔️ 재점령하기</button>
+        <button class="popup-close-btn" onclick="closeStampPopup()">닫기</button>
+      </div>
+    </div>
+
   </div><!-- /.phone-container -->
 
   <!-- Scripts -->

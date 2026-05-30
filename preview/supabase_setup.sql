@@ -57,3 +57,23 @@ INSERT INTO public.spots (name, lat, lng, type, emoji) VALUES
   ('정자 로스터리 카페',    37.3610, 127.1121, 'official', '☕'),
   ('정자 파스타 맛집',      37.3598, 127.1135, 'official', '🍝'),
   ('정자 한강뷰 디저트카페', 37.3625, 127.1098, 'official', '🍰');
+
+-- ── 5. stamps 테이블 (다크소울 방명록 / 점령 시스템) ──
+--   동일 spot_id에 여러 기록이 쌓이며, 가장 최근 created_at이 '현재 점령자'
+CREATE TABLE IF NOT EXISTS public.stamps (
+  id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  spot_id      UUID        NOT NULL REFERENCES public.spots(id) ON DELETE CASCADE,
+  user_uuid    TEXT        NOT NULL,   -- device UUID (익명 식별자)
+  user_color   TEXT        NOT NULL DEFAULT '#ff3478',  -- 유저 고유 색상 (hex)
+  message      TEXT        NOT NULL,   -- 조합형 메시지 (예: "이 앞 JMT 미쳤다")
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.stamps ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "stamps: anon insert" ON public.stamps FOR INSERT WITH CHECK (true);
+CREATE POLICY "stamps: anon select" ON public.stamps FOR SELECT USING (true);
+
+-- 최신 점령자 조회용 인덱스 (spot_id + created_at DESC)
+CREATE INDEX IF NOT EXISTS idx_stamps_spot_latest
+  ON public.stamps (spot_id, created_at DESC);
