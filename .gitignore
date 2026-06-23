@@ -1,0 +1,12 @@
+# System files
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Temporary / Backup files
+*.zip
+preview.zip
+.Rhistory
+.RData
+.Rapp.history
+preview/.Rhistory
