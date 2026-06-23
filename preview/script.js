@@ -527,3 +527,101 @@ function applyDBPoints(userData) {
   const el = document.getElementById('user-points');
   if (el) el.textContent = points.toLocaleString();
 }
+
+// ════════════════════════════════════════════════════════
+//  장소 추가 기능
+// ════════════════════════════════════════════════════════
+
+// 장소 추가 모드 상태
+let _pendingSpotLatLng = null; // 확정된 위도/경도를 임시 저장
+
+// 1. FAB 클릭 → 크로스헤어 모드 진입
+function startAddSpotMode() {
+  document.getElementById('crosshair-overlay').classList.remove('hidden');
+  document.getElementById('fab-add-spot').classList.add('active');
+}
+
+// 2. 취소 버튼 → 크로스헤어 모드 종료
+function cancelAddSpotMode() {
+  document.getElementById('crosshair-overlay').classList.add('hidden');
+  document.getElementById('fab-add-spot').classList.remove('active');
+  _pendingSpotLatLng = null;
+}
+
+// 3. "여기에 추가" 클릭 → 지도 중앙 좌표를 읽어 이름 입력 모달 열기
+function confirmSpotLocation() {
+  if (!kakaoMap) return;
+  const center = kakaoMap.getCenter();
+  _pendingSpotLatLng = { lat: center.getLat(), lng: center.getLng() };
+
+  // 크로스헤어 숨기고 이름 입력 모달 열기
+  document.getElementById('crosshair-overlay').classList.add('hidden');
+  document.getElementById('fab-add-spot').classList.remove('active');
+  document.getElementById('add-spot-name-input').value = '';
+  document.getElementById('add-spot-modal-backdrop').classList.remove('hidden');
+  setTimeout(() => document.getElementById('add-spot-name-input').focus(), 300);
+}
+
+// 4. 이름 입력 모달 취소
+function cancelAddSpotName() {
+  document.getElementById('add-spot-modal-backdrop').classList.add('hidden');
+  _pendingSpotLatLng = null;
+}
+
+// 5. 완료 → Supabase INSERT 후 즉시 마커 렌더링
+async function submitNewSpot() {
+  const nameInput = document.getElementById('add-spot-name-input');
+  const name = nameInput.value.trim();
+  if (!name) {
+    nameInput.focus();
+    return;
+  }
+  if (!_pendingSpotLatLng) return;
+
+  const btn = document.getElementById('add-spot-confirm-btn');
+  btn.disabled = true;
+  btn.textContent = '추가 중...';
+
+  const newSpot = {
+    name,
+    lat:     _pendingSpotLatLng.lat,
+    lng:     _pendingSpotLatLng.lng,
+    crew_id: currentCrewId,
+    type:    'user',
+    emoji:   '📌',
+  };
+
+  // Supabase 미연동 시 로컬 데모
+  if (!window._supabaseReady || !window._supabaseClient) {
+    const demoSpot = { id: `local-${Date.now()}`, ...newSpot };
+    renderSpotsOnMap([demoSpot]);
+    document.getElementById('add-spot-modal-backdrop').classList.add('hidden');
+    showToast(`📌 "${name}" 추가 완료!`);
+    btn.disabled = false;
+    btn.textContent = '✅ 추가하기';
+    _pendingSpotLatLng = null;
+    return;
+  }
+
+  const { data, error } = await window._supabaseClient
+    .from('spots')
+    .insert([newSpot])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[Chaeum] 장소 추가 실패:', error);
+    showToast('❌ 장소 추가에 실패했습니다.');
+    btn.disabled = false;
+    btn.textContent = '✅ 추가하기';
+    return;
+  }
+
+  // 성공 → 즉시 지도에 마커 추가
+  renderSpotsOnMap([data]);
+  document.getElementById('add-spot-modal-backdrop').classList.add('hidden');
+  showToast(`📌 "${data.name}" 추가 완료!`);
+  btn.disabled = false;
+  btn.textContent = '✅ 추가하기';
+  _pendingSpotLatLng = null;
+}

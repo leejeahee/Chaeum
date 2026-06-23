@@ -93,6 +93,23 @@
 
       <!-- 카카오 지도 -->
       <div id="kakao-map"></div>
+
+      <!-- 장소 추가 FAB -->
+      <button class="fab-add-spot" id="fab-add-spot" onclick="startAddSpotMode()">＋</button>
+
+      <!-- 크로스헤어 UI (장소 추가 모드일 때만 표시) -->
+      <div class="crosshair-overlay hidden" id="crosshair-overlay">
+        <div class="crosshair-target">
+          <div class="crosshair-line h"></div>
+          <div class="crosshair-line v"></div>
+          <div class="crosshair-dot"></div>
+        </div>
+        <p class="crosshair-hint">지도를 움직여 위치를 지정하세요</p>
+        <div class="crosshair-actions">
+          <button class="crosshair-confirm-btn" onclick="confirmSpotLocation()">📍 여기에 추가</button>
+          <button class="crosshair-cancel-btn" onclick="cancelAddSpotMode()">취소</button>
+        </div>
+      </div>
     </div>
 
     <!-- ════════════════════════════════════════
@@ -181,6 +198,25 @@
           <span>⚔️ 점령하기</span>
         </button>
         <button class="modal-close-btn" onclick="closeConquerModal()">취소</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         모달: 장소 이름 입력
+    ════════════════════════════════════════ -->
+    <div class="modal-backdrop hidden" id="add-spot-modal-backdrop" onclick="cancelAddSpotName()">
+      <div class="add-spot-modal" onclick="event.stopPropagation()">
+        <div class="add-spot-emoji">📍</div>
+        <h3 class="add-spot-title">장소 이름을 입력하세요</h3>
+        <input
+          type="text"
+          id="add-spot-name-input"
+          class="add-spot-input"
+          placeholder="예: 우리 단골 카페"
+          maxlength="20"
+        />
+        <button class="add-spot-confirm-btn" id="add-spot-confirm-btn" onclick="submitNewSpot()">✅ 추가하기</button>
+        <button class="modal-close-btn" onclick="cancelAddSpotName()">취소</button>
       </div>
     </div>
 

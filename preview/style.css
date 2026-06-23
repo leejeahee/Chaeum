@@ -870,3 +870,194 @@ p { color: var(--text-secondary); }
   filter: drop-shadow(0 6px 20px var(--user-color, rgba(255,52,120,0.5)));
 }
 
+/* ════════════════════════════════════════
+   장소 추가 FAB (플로팅 액션 버튼)
+════════════════════════════════════════ */
+.fab-add-spot {
+  position: absolute;
+  bottom: 20px;
+  right: 16px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--primary-color), #ff6b6b);
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 20;
+  box-shadow: 0 6px 20px rgba(255,52,120,0.45);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fab-add-spot:active { transform: scale(0.92); }
+.fab-add-spot.active {
+  background: #555;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+}
+
+/* ════════════════════════════════════════
+   크로스헤어 오버레이 (장소 추가 모드)
+════════════════════════════════════════ */
+.crosshair-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+}
+.crosshair-overlay:not(.hidden) { pointer-events: all; }
+
+/* 십자선 */
+.crosshair-target {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  pointer-events: none;
+}
+.crosshair-line {
+  position: absolute;
+  background: var(--primary-color);
+  border-radius: 2px;
+}
+.crosshair-line.h {
+  width: 100%;
+  height: 2px;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+.crosshair-line.v {
+  width: 2px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+}
+.crosshair-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 3px rgba(255,52,120,0.25);
+}
+
+/* 안내 텍스트 */
+.crosshair-hint {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+/* 하단 버튼 영역 */
+.crosshair-actions {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 10px;
+  padding: 0 20px;
+}
+.crosshair-confirm-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary-color), #ff6b6b);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(255,52,120,0.4);
+  transition: transform 0.15s;
+}
+.crosshair-confirm-btn:active { transform: scale(0.97); }
+.crosshair-cancel-btn {
+  padding: 14px 18px;
+  border: 1.5px solid #ddd;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.9);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+
+/* ════════════════════════════════════════
+   장소 이름 입력 모달
+════════════════════════════════════════ */
+.add-spot-modal {
+  background: #fff;
+  width: 100%;
+  border-radius: 28px 28px 0 0;
+  padding: 28px 24px 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  animation: slideUp 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.add-spot-emoji { font-size: 36px; }
+.add-spot-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.add-spot-input {
+  width: 100%;
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border-color);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: #fafafa;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.add-spot-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255,52,120,0.12);
+  background: #fff;
+}
+.add-spot-confirm-btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary-color), #ff6b6b);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(255,52,120,0.3);
+  transition: transform 0.15s ease;
+}
+.add-spot-confirm-btn:active { transform: scale(0.97); }
+.add-spot-confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
