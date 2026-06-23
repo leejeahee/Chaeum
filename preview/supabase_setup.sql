@@ -1,6 +1,11 @@
 -- =======================================================
 -- Chaeum MVP: DB 스키마 전체 설정
 -- Supabase SQL Editor에 복붙 후 Run 클릭
+--
+-- [변경 이력]
+-- 2026-05-30  초기 스키마 생성 (users, crews, spots, stamps)
+-- 2026-06-23  장소 추가 기능 구현 — spots INSERT (user type) 연동 확인
+--             프론트: script.js > submitNewSpot() → crew_id, type, emoji 포함 INSERT
 -- =======================================================
 
 -- ── 1. users 테이블 ───────────────────────────────────
