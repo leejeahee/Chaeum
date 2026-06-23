@@ -7,8 +7,8 @@
 // ── 1. Supabase 클라이언트 초기화 ──────────────────────
 //  ⚠️ 아래 두 값을 Supabase 프로젝트의 실제 값으로 교체하세요.
 //  Settings > API > Project URL / anon public key
-const SUPABASE_URL  = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL  = 'https://jwivrbqmzzgjmoewoblx.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_y7r5TidCup0lWmoIV_Y4_Q_3ca1sG6l'; // publishable(공개) 키 — 클라이언트 노출 안전, RLS로 보호
 
 // Supabase 설정 전 가드 — 플레이스홀더 상태면 클라이언트 초기화 건너뜀
 window._supabaseReady = SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON !== 'YOUR_SUPABASE_ANON_KEY';
