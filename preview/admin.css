@@ -1,0 +1,161 @@
+/* ════════════════════════════════════════════════════════
+   Chaeum Admin — admin.css
+   공식 위치 추가 운영자 도구 스타일
+   ════════════════════════════════════════════════════════ */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #1a1a1a;
+  background: #f4f5f7;
+}
+
+.hidden { display: none !important; }
+
+/* ── 헤더 ── */
+.admin-header {
+  padding: 14px 20px;
+  background: #1a1a2e;
+  color: #fff;
+}
+.admin-header h1 { margin: 0; font-size: 18px; font-weight: 700; }
+
+.warning-banner {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #ffe8e8;
+  color: #b00020;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+/* ── 본문 레이아웃 ── */
+.admin-body {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  height: calc(100vh - 58px);
+}
+@media (max-width: 880px) {
+  .admin-body { flex-direction: column; height: auto; }
+}
+
+/* ── 지도 ── */
+.map-pane {
+  flex: 1 1 60%;
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+}
+#admin-map {
+  flex: 1;
+  width: 100%;
+  min-height: 360px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #e9ecef;
+}
+.map-error {
+  padding: 24px;
+  text-align: center;
+  color: #888;
+  line-height: 1.6;
+}
+.map-hint { margin: 10px 2px 0; font-size: 13px; color: #666; }
+
+/* ── 폼 패널 ── */
+.form-pane {
+  flex: 1 1 40%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  overflow-y: auto;
+}
+@media (max-width: 880px) { .form-pane { max-width: none; } }
+
+.pane-title { margin: 0 0 12px; font-size: 15px; font-weight: 700; }
+.recent-title { margin-top: 24px; }
+
+.form-grid { display: flex; flex-direction: column; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field-label { font-size: 12px; color: #555; font-weight: 600; }
+.field-label em { color: #e03131; font-style: normal; }
+.field-row { display: flex; gap: 10px; }
+.field-row .field { flex: 1; }
+.field-emoji { max-width: 96px; }
+
+input, select {
+  padding: 10px 11px;
+  border: 1px solid #d0d3d9;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  width: 100%;
+  background: #fff;
+}
+input:focus, select:focus { outline: none; border-color: #4c6ef5; }
+
+.form-error { margin: 0; color: #e03131; font-size: 13px; }
+
+.submit-btn {
+  margin-top: 4px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #4c6ef5;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.submit-btn:hover:not(:disabled) { background: #3b5bdb; }
+.submit-btn:disabled { background: #adb5bd; cursor: not-allowed; }
+
+/* ── 최근 추가 목록 ── */
+.recent-empty { color: #999; font-size: 13px; margin: 0; }
+.recent-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.recent-item {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  grid-template-areas:
+    "emoji name  cat"
+    "emoji coord coord";
+  align-items: center;
+  gap: 2px 8px;
+  padding: 8px 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.ri-emoji { grid-area: emoji; font-size: 18px; }
+.ri-name  { grid-area: name; font-weight: 600; }
+.ri-cat   { grid-area: cat; color: #4c6ef5; font-size: 12px; }
+.ri-coord { grid-area: coord; color: #888; font-size: 11px; }
+
+/* ── 토스트 ── */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%) translateY(20px);
+  background: #1a1a2e;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 24px;
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s, transform .25s;
+  z-index: 1000;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }

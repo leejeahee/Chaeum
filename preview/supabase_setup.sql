@@ -51,6 +51,11 @@ ALTER TABLE public.spots ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "spots: anon insert"  ON public.spots FOR INSERT  WITH CHECK (true);
 CREATE POLICY "spots: anon select"  ON public.spots FOR SELECT  USING (true);
 
+-- ── 3-1. spots 메타 컬럼 (어드민 위치 추가용) ─────────
+--   기존 DB에도 안전하게 적용되도록 ADD COLUMN IF NOT EXISTS 사용 (둘 다 nullable)
+ALTER TABLE public.spots ADD COLUMN IF NOT EXISTS category TEXT;
+ALTER TABLE public.spots ADD COLUMN IF NOT EXISTS address  TEXT;
+
 -- ── 4. 분당 정자역 근처 공식 핫플 3개 INSERT ─────────
 --   (type: 'official', crew_id: NULL → 모든 크루 공통)
 INSERT INTO public.spots (name, lat, lng, type, emoji) VALUES
