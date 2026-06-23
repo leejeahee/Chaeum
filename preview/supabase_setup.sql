@@ -48,6 +48,8 @@ CREATE TABLE IF NOT EXISTS public.spots (
   lng         DOUBLE PRECISION NOT NULL,
   type        TEXT        NOT NULL DEFAULT 'official' CHECK (type IN ('official', 'user')),
   emoji       TEXT        NOT NULL DEFAULT '📍',
+  category    TEXT,                            -- 카페 / 식당 / 기타 (어드민 입력, nullable)
+  address     TEXT,                            -- 도로명/지번 주소 (어드민 입력, nullable)
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -55,6 +57,13 @@ ALTER TABLE public.spots ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "spots: anon insert"  ON public.spots FOR INSERT  WITH CHECK (true);
 CREATE POLICY "spots: anon select"  ON public.spots FOR SELECT  USING (true);
+
+-- ── 3-1. spots 메타 컬럼 마이그레이션 (기존 DB 업그레이드용) ──
+--   신규 설치는 위 CREATE TABLE에 이미 포함되어 있음.
+--   이 블록은 예전에 만든 DB(컬럼이 없던 시절)를 안전하게 올리기 위한 것.
+--   (ADD COLUMN IF NOT EXISTS — 이 두 줄은 여러 번 실행해도 안전. 기존 DB는 이 두 줄만 실행하면 됨)
+ALTER TABLE public.spots ADD COLUMN IF NOT EXISTS category TEXT;
+ALTER TABLE public.spots ADD COLUMN IF NOT EXISTS address  TEXT;
 
 -- ── 4. 분당 정자역 근처 공식 핫플 3개 INSERT ─────────
 --   (type: 'official', crew_id: NULL → 모든 크루 공통)
