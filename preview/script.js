@@ -590,7 +590,7 @@ function onMapClickAddSpot(latlng) {
   tempAddMarker = new kakao.maps.CustomOverlay({
     position: latlng,
     content:  markerHTML,
-    yAnchor:  1.3,
+    yAnchor:  1.0, // 핀의 끝부분이 좌표에 닿도록 1.0으로 수정
     zIndex:   30,
     clickable: true // 클릭 이벤트가 지도로 넘어가지 않도록 방지
   });

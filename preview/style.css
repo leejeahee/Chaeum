@@ -596,8 +596,7 @@ p { color: var(--text-secondary); }
   display: flex;
   flex-direction: column;
   align-items: center;
-  transform: translateY(-100%);
-  margin-bottom: 4px;
+  margin-bottom: 4px; /* 핀 끝에서 살짝 띄워주는 여백 */
 }
 
 /* ════════════════════════════════════════
@@ -944,6 +943,7 @@ p { color: var(--text-secondary); }
    임시 마커 (지도 클릭 시 나타나는 확인용)
 ════════════════════════════════════════ */
 .temp-marker-wrap {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -966,6 +966,8 @@ p { color: var(--text-secondary); }
   font-size: 16px;
 }
 .temp-marker-btn {
+  position: absolute;
+  top: 100%;
   margin-top: 6px;
   padding: 8px 14px;
   border: none;
