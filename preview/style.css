@@ -569,6 +569,8 @@ p { color: var(--text-secondary); }
 
 /* 장소명 라벨 */
 .stamp-label {
+  position: absolute;
+  top: 100%;
   background: #fff;
   color: #333;
   font-size: 11px;
@@ -593,10 +595,10 @@ p { color: var(--text-secondary); }
 
 /* 전체 오버레이 래퍼 */
 .stamp-overlay-wrapper {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 4px; /* 핀 끝에서 살짝 띄워주는 여백 */
 }
 
 /* ════════════════════════════════════════

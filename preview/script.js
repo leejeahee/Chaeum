@@ -432,7 +432,7 @@ function renderSpotsOnMap(spots) {
     const overlay = new kakao.maps.CustomOverlay({
       position: new kakao.maps.LatLng(spot.lat, spot.lng),
       content:  buildStampHTML(spot),
-      yAnchor:  1.0,
+      yAnchor:  0.5, // 도장(원형)의 정중앙이 좌표에 오도록 0.5로 설정
       zIndex:   spot.type === 'official' ? 4 : 3,
     });
     overlay.setMap(kakaoMap);
