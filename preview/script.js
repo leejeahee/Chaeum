@@ -548,7 +548,7 @@ let _pendingSpotLatLng = null;  // 확정된 위도/경도를 임시 저장
 // FAB 토글 (모드 진입/종료)
 function toggleAddSpotMode() {
   if (isAddSpotMode) {
-    exitAddSpotMode();
+    exitAddSpotMode(true); // 취소 시 pending 데이터도 삭제
   } else {
     isAddSpotMode = true;
     document.getElementById('fab-add-spot').classList.add('active');
@@ -556,12 +556,14 @@ function toggleAddSpotMode() {
   }
 }
 
-function exitAddSpotMode() {
+function exitAddSpotMode(clearPending = true) {
   isAddSpotMode = false;
   document.getElementById('fab-add-spot').classList.remove('active');
   document.getElementById('add-spot-banner').classList.add('hidden');
   removeTempMarker();
-  _pendingSpotLatLng = null;
+  if (clearPending) {
+    _pendingSpotLatLng = null;
+  }
 }
 
 function removeTempMarker() {
@@ -590,6 +592,7 @@ function onMapClickAddSpot(latlng) {
     content:  markerHTML,
     yAnchor:  1.3,
     zIndex:   30,
+    clickable: true // 클릭 이벤트가 지도로 넘어가지 않도록 방지
   });
   tempAddMarker.setMap(kakaoMap);
 }
@@ -597,8 +600,9 @@ function onMapClickAddSpot(latlng) {
 // 임시 마커의 "여기에 추가" 버튼 클릭 → 이름 입력 모달 열기
 function confirmTempSpot(lat, lng) {
   _pendingSpotLatLng = { lat, lng };
-  removeTempMarker();
-  exitAddSpotMode();
+  // 모달을 열기 위해 UI 상태만 끄고, 위치 정보는 보존
+  exitAddSpotMode(false);
+  
   document.getElementById('add-spot-name-input').value = '';
   document.getElementById('add-spot-modal-backdrop').classList.remove('hidden');
   setTimeout(() => document.getElementById('add-spot-name-input').focus(), 300);
