@@ -477,6 +477,7 @@ function initKakaoMap(crewId) {
 async function fetchAndRender(crewId) {
   const spots = await fetchSpots(crewId);
   renderSpotsOnMap(spots);
+  subscribeToStamps(); // 실시간 점령 동기화 시작
 }
 
 // ════════════════════════════════════════════════════════
@@ -624,4 +625,55 @@ async function submitNewSpot() {
   btn.disabled = false;
   btn.textContent = '✅ 추가하기';
   _pendingSpotLatLng = null;
+}
+
+// ════════════════════════════════════════════════════════
+//  Supabase Realtime — stamps INSERT 구독 (실시간 점령 동기화)
+// ════════════════════════════════════════════════════════
+let _stampsChannel = null;
+
+function subscribeToStamps() {
+  // Supabase 미연동이면 건너뜀
+  if (!window._supabaseReady || !window._supabaseClient) return;
+
+  // 이미 구독 중이면 중복 방지
+  if (_stampsChannel) {
+    console.log('[Chaeum Realtime] 이미 구독 중 — 스킵');
+    return;
+  }
+
+  _stampsChannel = window._supabaseClient
+    .channel('stamps-realtime')
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'stamps' },
+      (payload) => {
+        const newStamp = payload.new;
+        console.log('[Chaeum Realtime] 새 점령 수신:', newStamp);
+
+        // 내가 방금 점령한 것이면 무시 (이미 로컬에서 UI 처리됨)
+        if (newStamp.user_uuid === myUserUUID) {
+          console.log('[Chaeum Realtime] 내 점령 → 스킵');
+          return;
+        }
+
+        // DOM에서 장소 이름 추출 (label-{spotId} 요소)
+        const labelEl = document.getElementById(`label-${newStamp.spot_id}`);
+        const spotName = labelEl ? labelEl.textContent : '알 수 없는 장소';
+
+        // 도장 뒤집기 + 색상 반영
+        _applyConqueredState(
+          newStamp.spot_id,
+          spotName,
+          newStamp.message,
+          newStamp.user_color,
+          newStamp.user_uuid
+        );
+
+        showToast(`🔔 ${spotName}이(가) 다른 탐험가에게 점령되었습니다!`);
+      }
+    )
+    .subscribe((status) => {
+      console.log('[Chaeum Realtime] 구독 상태:', status);
+    });
 }
