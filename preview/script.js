@@ -472,6 +472,13 @@ function initKakaoMap(crewId) {
   };
   kakaoMap = new kakao.maps.Map(mapContainer, mapOption);
   kakaoMap.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
+
+  // 지도 클릭 이벤트 — 장소 추가 모드일 때만 동작
+  kakao.maps.event.addListener(kakaoMap, 'click', function(mouseEvent) {
+    if (!isAddSpotMode) return;
+    onMapClickAddSpot(mouseEvent.latLng);
+  });
+
   fetchAndRender(crewId);
 }
 
@@ -531,40 +538,73 @@ function applyDBPoints(userData) {
 }
 
 // ════════════════════════════════════════════════════════
-//  장소 추가 기능
+//  장소 추가 기능 (지도 클릭 방식)
 // ════════════════════════════════════════════════════════
 
-// 장소 추가 모드 상태
-let _pendingSpotLatLng = null; // 확정된 위도/경도를 임시 저장
+let isAddSpotMode = false;      // 장소 추가 모드 여부
+let tempAddMarker = null;       // 카카오맵 CustomOverlay 임시 마커
+let _pendingSpotLatLng = null;  // 확정된 위도/경도를 임시 저장
 
-// 1. FAB 클릭 → 크로스헤어 모드 진입
-function startAddSpotMode() {
-  document.getElementById('crosshair-overlay').classList.remove('hidden');
-  document.getElementById('fab-add-spot').classList.add('active');
+// FAB 토글 (모드 진입/종료)
+function toggleAddSpotMode() {
+  if (isAddSpotMode) {
+    exitAddSpotMode();
+  } else {
+    isAddSpotMode = true;
+    document.getElementById('fab-add-spot').classList.add('active');
+    document.getElementById('add-spot-banner').classList.remove('hidden');
+  }
 }
 
-// 2. 취소 버튼 → 크로스헤어 모드 종료
-function cancelAddSpotMode() {
-  document.getElementById('crosshair-overlay').classList.add('hidden');
+function exitAddSpotMode() {
+  isAddSpotMode = false;
   document.getElementById('fab-add-spot').classList.remove('active');
+  document.getElementById('add-spot-banner').classList.add('hidden');
+  removeTempMarker();
   _pendingSpotLatLng = null;
 }
 
-// 3. "여기에 추가" 클릭 → 지도 중앙 좌표를 읽어 이름 입력 모달 열기
-function confirmSpotLocation() {
-  if (!kakaoMap) return;
-  const center = kakaoMap.getCenter();
-  _pendingSpotLatLng = { lat: center.getLat(), lng: center.getLng() };
+function removeTempMarker() {
+  if (tempAddMarker) {
+    tempAddMarker.setMap(null);
+    tempAddMarker = null;
+  }
+}
 
-  // 크로스헤어 숨기고 이름 입력 모달 열기
-  document.getElementById('crosshair-overlay').classList.add('hidden');
-  document.getElementById('fab-add-spot').classList.remove('active');
+// 지도 클릭 시 임시 마커 생성
+function onMapClickAddSpot(latlng) {
+  // 기존 임시 마커 제거
+  removeTempMarker();
+
+  const markerHTML = `
+    <div class="temp-marker-wrap">
+      <div class="temp-marker-pin">
+        <span class="temp-marker-pin-inner">📍</span>
+      </div>
+      <button class="temp-marker-btn" onclick="confirmTempSpot(${latlng.getLat()}, ${latlng.getLng()})">여기에 추가</button>
+    </div>
+  `;
+
+  tempAddMarker = new kakao.maps.CustomOverlay({
+    position: latlng,
+    content:  markerHTML,
+    yAnchor:  1.3,
+    zIndex:   30,
+  });
+  tempAddMarker.setMap(kakaoMap);
+}
+
+// 임시 마커의 "여기에 추가" 버튼 클릭 → 이름 입력 모달 열기
+function confirmTempSpot(lat, lng) {
+  _pendingSpotLatLng = { lat, lng };
+  removeTempMarker();
+  exitAddSpotMode();
   document.getElementById('add-spot-name-input').value = '';
   document.getElementById('add-spot-modal-backdrop').classList.remove('hidden');
   setTimeout(() => document.getElementById('add-spot-name-input').focus(), 300);
 }
 
-// 4. 이름 입력 모달 취소
+// 이름 입력 모달 취소
 function cancelAddSpotName() {
   document.getElementById('add-spot-modal-backdrop').classList.add('hidden');
   _pendingSpotLatLng = null;

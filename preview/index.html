@@ -94,22 +94,16 @@
       <!-- 카카오 지도 -->
       <div id="kakao-map"></div>
 
-      <!-- 장소 추가 FAB -->
-      <button class="fab-add-spot" id="fab-add-spot" onclick="startAddSpotMode()">＋</button>
-
-      <!-- 크로스헤어 UI (장소 추가 모드일 때만 표시) -->
-      <div class="crosshair-overlay hidden" id="crosshair-overlay">
-        <div class="crosshair-target">
-          <div class="crosshair-line h"></div>
-          <div class="crosshair-line v"></div>
-          <div class="crosshair-dot"></div>
-        </div>
-        <p class="crosshair-hint">지도를 움직여 위치를 지정하세요</p>
-        <div class="crosshair-actions">
-          <button class="crosshair-confirm-btn" onclick="confirmSpotLocation()">📍 여기에 추가</button>
-          <button class="crosshair-cancel-btn" onclick="cancelAddSpotMode()">취소</button>
-        </div>
+      <!-- 장소 추가 모드 안내 배너 -->
+      <div class="add-spot-banner hidden" id="add-spot-banner">
+        <span class="add-spot-banner-icon">📍</span>
+        <span>장소를 추가할 위치를 클릭하세요</span>
       </div>
+
+      <!-- 장소 추가 FAB (토글) -->
+      <button class="fab-add-spot" id="fab-add-spot" onclick="toggleAddSpotMode()">
+        <span class="fab-icon">＋</span>
+      </button>
     </div>
 
     <!-- ════════════════════════════════════════
