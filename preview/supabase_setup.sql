@@ -6,6 +6,8 @@
 -- 2026-05-30  초기 스키마 생성 (users, crews, spots, stamps)
 -- 2026-06-23  장소 추가 기능 구현 — spots INSERT (user type) 연동 확인
 --             프론트: script.js > submitNewSpot() → crew_id, type, emoji 포함 INSERT
+-- 2026-06-24  [팀 공유] Realtime 동기화 기능 추가에 따른 PUBLICATION 설정
+--             stamps, spots 테이블의 INSERT 이벤트를 구독하기 위해 supabase_realtime publication 활성화
 -- =======================================================
 
 -- ── 1. users 테이블 ───────────────────────────────────
