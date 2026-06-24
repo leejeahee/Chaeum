@@ -91,3 +91,9 @@ CREATE POLICY "stamps: anon select" ON public.stamps FOR SELECT USING (true);
 -- 최신 점령자 조회용 인덱스 (spot_id + created_at DESC)
 CREATE INDEX IF NOT EXISTS idx_stamps_spot_latest
   ON public.stamps (spot_id, created_at DESC);
+
+-- ── 6. Supabase Realtime 활성화 ──────────────────────
+--   stamps/spots 테이블의 INSERT 이벤트를 실시간으로 구독하기 위해 필요
+--   (기존 DB에서는 이 두 줄만 SQL Editor에서 실행하면 됨)
+ALTER PUBLICATION supabase_realtime ADD TABLE public.stamps;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.spots;

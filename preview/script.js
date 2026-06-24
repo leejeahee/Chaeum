@@ -439,6 +439,7 @@ function renderSpotsOnMap(spots) {
   });
 
   console.log(`[Chaeum] ${spots.length}개 스팟 렌더링 완료`);
+  _trackRenderedSpots(spots); // Realtime 필터용 목록 갱신
 
   // 스팟 렌더링 직후 — 기존 점령 상태를 로드해 UI에 반영
   const spotIds = spots.map(s => s.id);
@@ -477,7 +478,7 @@ function initKakaoMap(crewId) {
 async function fetchAndRender(crewId) {
   const spots = await fetchSpots(crewId);
   renderSpotsOnMap(spots);
-  subscribeToStamps(); // 실시간 점령 동기화 시작
+  subscribeToRealtime(); // 실시간 점령 + 장소 동기화 시작
 }
 
 // ════════════════════════════════════════════════════════
@@ -628,22 +629,32 @@ async function submitNewSpot() {
 }
 
 // ════════════════════════════════════════════════════════
-//  Supabase Realtime — stamps INSERT 구독 (실시간 점령 동기화)
+//  Supabase Realtime — stamps & spots INSERT 구독
+//  (실시간 점령 동기화 + 새 장소 실시간 추가)
 // ════════════════════════════════════════════════════════
-let _stampsChannel = null;
+let _realtimeChannel = null;
 
-function subscribeToStamps() {
+// 현재 내 화면에 렌더링된 spotId 목록 (Realtime 필터용)
+const _renderedSpotIds = new Set();
+
+// renderSpotsOnMap에서 렌더링할 때 호출하여 목록 갱신
+function _trackRenderedSpots(spots) {
+  spots.forEach(s => _renderedSpotIds.add(s.id));
+}
+
+function subscribeToRealtime() {
   // Supabase 미연동이면 건너뜀
   if (!window._supabaseReady || !window._supabaseClient) return;
 
   // 이미 구독 중이면 중복 방지
-  if (_stampsChannel) {
+  if (_realtimeChannel) {
     console.log('[Chaeum Realtime] 이미 구독 중 — 스킵');
     return;
   }
 
-  _stampsChannel = window._supabaseClient
-    .channel('stamps-realtime')
+  _realtimeChannel = window._supabaseClient
+    .channel('chaeum-realtime')
+    // ── stamps INSERT 구독 (점령 동기화) ──
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'stamps' },
@@ -657,7 +668,13 @@ function subscribeToStamps() {
           return;
         }
 
-        // DOM에서 장소 이름 추출 (label-{spotId} 요소)
+        // 내 화면에 없는 스팟이면 무시 (다른 크루의 스팟)
+        if (!_renderedSpotIds.has(newStamp.spot_id)) {
+          console.log('[Chaeum Realtime] 내 지도에 없는 스팟 → 스킵');
+          return;
+        }
+
+        // DOM에서 장소 이름 추출
         const labelEl = document.getElementById(`label-${newStamp.spot_id}`);
         const spotName = labelEl ? labelEl.textContent : '알 수 없는 장소';
 
@@ -671,6 +688,26 @@ function subscribeToStamps() {
         );
 
         showToast(`🔔 ${spotName}이(가) 다른 탐험가에게 점령되었습니다!`);
+      }
+    )
+    // ── spots INSERT 구독 (새 장소 실시간 추가) ──
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'spots' },
+      (payload) => {
+        const newSpot = payload.new;
+        console.log('[Chaeum Realtime] 새 장소 수신:', newSpot);
+
+        // 내 크루의 user 스팟이거나, official 스팟일 때만 렌더링
+        if (newSpot.type === 'official' || newSpot.crew_id === currentCrewId) {
+          // 이미 내 화면에 있으면 스킵 (내가 방금 추가한 것)
+          if (_renderedSpotIds.has(newSpot.id)) {
+            console.log('[Chaeum Realtime] 이미 렌더링된 스팟 → 스킵');
+            return;
+          }
+          renderSpotsOnMap([newSpot]);
+          showToast(`📍 "${newSpot.name}" 새 장소가 추가되었습니다!`);
+        }
       }
     )
     .subscribe((status) => {
