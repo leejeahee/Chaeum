@@ -104,17 +104,66 @@
       <button class="fab-add-spot" id="fab-add-spot" onclick="toggleAddSpotMode()">
         <span class="fab-icon">＋</span>
       </button>
+
+      <!-- 내 위치로 (리센터) 버튼 -->
+      <button class="fab-recenter" id="fab-recenter" onclick="recenterMap()" title="내 위치로">
+        🎯
+      </button>
     </div>
 
     <!-- ════════════════════════════════════════
          SCREEN: 마이페이지
     ════════════════════════════════════════ -->
     <div class="screen-content hidden" id="screen-mypage">
-      <div class="top-nav">
-        <h2>마이페이지</h2>
+      <div class="mypage-header">
+        <h2 class="mypage-title">마이페이지</h2>
       </div>
       <div class="mypage-body">
-        <p>준비 중인 기능입니다.</p>
+
+        <!-- 프로필 카드 -->
+        <div class="mypage-profile-card">
+          <div class="mypage-avatar" id="mypage-avatar">🧭</div>
+          <div class="mypage-profile-info">
+            <p class="mypage-nickname" id="mypage-nickname">탐험가</p>
+            <p class="mypage-uuid" id="mypage-uuid"></p>
+          </div>
+        </div>
+
+        <!-- 스탯 배지 -->
+        <div class="mypage-stats">
+          <div class="mypage-stat-card">
+            <span class="mypage-stat-icon">🍩</span>
+            <span class="mypage-stat-value" id="mypage-points">0</span>
+            <span class="mypage-stat-label">포인트</span>
+          </div>
+          <div class="mypage-stat-card">
+            <span class="mypage-stat-icon">⚔️</span>
+            <span class="mypage-stat-value" id="mypage-stamp-count">0</span>
+            <span class="mypage-stat-label">점령한 도장</span>
+          </div>
+          <div class="mypage-stat-card">
+            <span class="mypage-stat-icon">🏷️</span>
+            <span class="mypage-stat-value" id="mypage-title-badge">초보 탐험가</span>
+            <span class="mypage-stat-label">칭호</span>
+          </div>
+        </div>
+
+        <!-- 크루 정보 -->
+        <div class="mypage-section">
+          <p class="mypage-section-label">현재 지도</p>
+          <div class="mypage-crew-row">
+            <span class="mypage-crew-name" id="mypage-crew-name">-</span>
+            <button class="mypage-crew-share-btn" onclick="showCrewCode()">코드 공유 🔗</button>
+          </div>
+        </div>
+
+        <!-- 액션 버튼 -->
+        <div class="mypage-actions">
+          <button class="mypage-action-btn" onclick="resetAndGoEntry()">
+            <span>🗺️</span> 새 지도 만들기
+          </button>
+        </div>
+
       </div>
     </div>
 

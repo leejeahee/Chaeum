@@ -10,3 +10,20 @@ preview.zip
 .RData
 .Rapp.history
 preview/.Rhistory
+
+# Environment variables (절대 커밋 금지 — API 키 포함)
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Capacitor native projects (자동 생성됨)
+ios/
+android/
+chaeum-app/ios/
+chaeum-app/android/

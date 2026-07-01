@@ -1053,3 +1053,346 @@ p { color: var(--text-secondary); }
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ════════════════════════════════════════
+   마이페이지 (My Page)
+════════════════════════════════════════ */
+#screen-mypage {
+  background: linear-gradient(160deg, #fff8fb 0%, #fff 60%, #f0f4ff 100%);
+  overflow-y: auto;
+}
+
+.mypage-header {
+  padding: 52px 24px 16px;
+  background: linear-gradient(135deg, var(--primary-color), #ff6b6b);
+}
+.mypage-title {
+  color: #fff !important;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.mypage-body {
+  padding: 20px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 프로필 카드 */
+.mypage-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+.mypage-avatar {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #fff0f5, #ffe4ef);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.mypage-profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mypage-nickname {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary) !important;
+}
+.mypage-uuid {
+  font-size: 11px;
+  color: var(--text-secondary) !important;
+  font-family: monospace;
+}
+
+/* 스탯 배지 */
+.mypage-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.mypage-stat-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.mypage-stat-icon {
+  font-size: 22px;
+}
+.mypage-stat-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--primary-color);
+  line-height: 1;
+}
+.mypage-stat-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-align: center;
+}
+
+/* 크루 정보 섹션 */
+.mypage-section {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.mypage-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.mypage-crew-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.mypage-crew-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.mypage-crew-share-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--primary-color), #ff6b6b);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.mypage-crew-share-btn:active { transform: scale(0.95); }
+
+/* 액션 버튼 */
+.mypage-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mypage-action-btn {
+  width: 100%;
+  padding: 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s, border-color 0.15s;
+  font-family: inherit;
+}
+.mypage-action-btn:hover {
+  background: #fff8fb;
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+/* 헤더 서브타이틀 */
+.mypage-subtitle {
+  color: rgba(255,255,255,0.8) !important;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* 프로필 — 칭호 텍스트 */
+.mypage-title-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary-color) !important;
+}
+
+/* 아바타 위의 색깔 도트 */
+.mypage-color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.mypage-avatar { position: relative; }
+
+/* 스탯 카드 — 색깔 프리뷰 원형 */
+.mypage-color-preview {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  margin: 2px 0;
+}
+
+/* 크루 점령 현황 리스트 */
+.mypage-crew-stamps {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mypage-crew-empty {
+  font-size: 12px;
+  color: var(--text-secondary) !important;
+  text-align: center;
+  padding: 8px 0;
+}
+.mypage-crew-stamp-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+.mypage-crew-stamp-color {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.mypage-crew-stamp-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.mypage-crew-stamp-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mypage-crew-stamp-badge {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+.mypage-crew-stamp-msg {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+}
+
+/* FAQ */
+.mypage-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+.mypage-faq-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mypage-faq-q {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary) !important;
+}
+.mypage-faq-a {
+  font-size: 12px;
+  color: var(--text-secondary) !important;
+  line-height: 1.5;
+  padding-left: 8px;
+  border-left: 2px solid var(--primary-color);
+}
+
+/* ════════════════════════════════════════
+   내 위치 파란 점 (My Location Dot)
+════════════════════════════════════════ */
+.my-location-dot {
+  width: 18px;
+  height: 18px;
+  background: #2979ff;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(41,121,255,0.5);
+  position: relative;
+  cursor: default;
+}
+
+/* 펄스 링 애니메이션 */
+.my-location-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(41,121,255,0.25);
+  animation: my-loc-pulse 2s ease-out infinite;
+}
+
+@keyframes my-loc-pulse {
+  0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(3.5); opacity: 0; }
+}
+
+/* ════════════════════════════════════════
+   리센터 FAB 버튼 (🎯 내 위치로)
+════════════════════════════════════════ */
+.fab-recenter {
+  position: absolute;
+  bottom: 136px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.fab-recenter:active {
+  transform: scale(0.92);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+

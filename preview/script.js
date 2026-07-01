@@ -19,6 +19,16 @@ let conquerContext = null;   // { spotId, spotName }
 // 장소별 최신 스탬프 상태 캐시 (spotId → { message, user_color, user_uuid })
 const stampStateCache = {};
 
+// 장소 좌표 캐시 (spotId → { lat, lng }) — 재점령 GPS 체크용
+const spotsDataCache = {};
+
+// ─── GPS 상태 ─────────────────────────────────────────
+let userLat           = null;  // 유저 현재 위도
+let userLng           = null;  // 유저 현재 경도
+let gpsWatchId        = null;  // watchPosition 핸들 (cleanup용)
+let myLocationOverlay = null;  // 블루 돗 CustomOverlay
+let gpsState          = 'pending'; // 'pending' | 'ok' | 'denied' | 'error'
+
 // ════════════════════════════════════════════════════════
 //  유저 식별자 & 색상 초기화
 // ════════════════════════════════════════════════════════
@@ -42,6 +52,112 @@ function initUserIdentity() {
     myUserColor = `hsl(${hue}, 70%, 50%)`;
     localStorage.setItem('chaeum_user_color', myUserColor);
   }
+}
+
+// ════════════════════════════════════════════════════════
+//  GPS 유틸리티
+// ════════════════════════════════════════════════════════
+
+/**
+ * Haversine Formula — 두 위경도 좌표 간 직선 거리(m) 계산
+ */
+function calcDistanceMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000; // 지구 반경 (m)
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/**
+ * 실시간 GPS 감시 시작
+ * - 크루 입장 후 initKakaoMap과 함께 호출
+ * - Capacitor 전환 시 이 함수만 교체하면 됨
+ */
+function startGPSWatch() {
+  if (!navigator.geolocation) {
+    console.warn('[Chaeum GPS] Geolocation API 미지원 기기');
+    return;
+  }
+  if (gpsWatchId !== null) return; // 이미 감시 중
+
+  gpsWatchId = navigator.geolocation.watchPosition(
+    (pos) => {
+      userLat = pos.coords.latitude;
+      userLng = pos.coords.longitude;
+      console.log(`[Chaeum GPS] 위치 업데이트: ${userLat.toFixed(5)}, ${userLng.toFixed(5)}`);
+      _updateMyLocationDot(); // 블루 돇 위치 갱신
+    },
+    (err) => {
+      if (err.code === GeolocationPositionError.PERMISSION_DENIED) {
+        showToast('📍 위치 권한을 허용해야 도장을 찍을 수 있습니다.');
+      } else if (err.code === GeolocationPositionError.TIMEOUT) {
+        console.warn('[Chaeum GPS] 위치 요청 타임아웃');
+      } else {
+        console.warn('[Chaeum GPS] 위치 오류:', err.message);
+      }
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+  );
+}
+
+/**
+ * GPS 감시 중지 (페이지 언로드 or 앱 종료 시)
+ */
+function stopGPSWatch() {
+  if (gpsWatchId !== null) {
+    navigator.geolocation.clearWatch(gpsWatchId);
+    gpsWatchId = null;
+  }
+}
+
+/**
+ * 블루 돇 CustomOverlay 생성 또는 이동
+ * - GPS 업데이트마다 호출되어 현재 위치를 나타냄
+ */
+function _updateMyLocationDot() {
+  if (!kakaoMap || userLat === null || userLng === null) return;
+
+  const pos = new kakao.maps.LatLng(userLat, userLng);
+
+  if (!myLocationOverlay) {
+    // 최초 생성
+    myLocationOverlay = new kakao.maps.CustomOverlay({
+      position: pos,
+      content:  '<div class="my-location-dot"><div class="my-location-pulse"></div></div>',
+      zIndex:   10,
+      yAnchor:  0.5,
+    });
+    myLocationOverlay.setMap(kakaoMap);
+  } else {
+    // 이미 있는 오버레이 위치만 업데이트
+    myLocationOverlay.setPosition(pos);
+  }
+}
+
+/**
+ * 리센터 — 내 위치로 지도 중심 스무스하게 이동
+ */
+function recenterMap() {
+  if (!kakaoMap) return;
+
+  if (gpsState === 'denied') {
+    showToast('📍 위치 권한이 거부되었습니다. 브라우저 설정에서 허용해 주세요.');
+    return;
+  }
+  if (gpsState === 'pending' || userLat === null || userLng === null) {
+    showToast('📡 GPS 신호를 수신하는 중입니다. 잠시 후 다시 눌러주세요.');
+    return;
+  }
+  if (gpsState === 'error') {
+    showToast('⚠️ GPS 신호를 받지 못했습니다. 위치 권한을 확인해 주세요.');
+    return;
+  }
+
+  kakaoMap.panTo(new kakao.maps.LatLng(userLat, userLng));
 }
 
 // ════════════════════════════════════════════════════════
@@ -98,6 +214,9 @@ function switchTab(tabId) {
   if (target) target.classList.remove('hidden');
   const navItem = document.getElementById(`nav-${tabId}`);
   if (navItem) navItem.classList.add('active');
+
+  // 마이페이지 진입 시 데이터 실시간 갱신
+  if (tabId === 'mypage') renderMypage();
 }
 
 // ════════════════════════════════════════════════════════
@@ -194,7 +313,21 @@ function copyCrewCode() {
 // ════════════════════════════════════════════════════════
 //  점령 모달 열기 / 닫기
 // ════════════════════════════════════════════════════════
-function openConquerModal(spotId, spotName) {
+function openConquerModal(spotId, spotName, spotLat, spotLng) {
+  // ── GPS 50m Locking 체크 ──────────────────────────────
+  if (spotLat !== undefined && spotLng !== undefined) {
+    if (userLat === null || userLng === null) {
+      showToast('📍 GPS 신호를 잡는 중입니다. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
+    const dist = calcDistanceMeters(userLat, userLng, spotLat, spotLng);
+    if (dist > 50) {
+      showToast(`📍 아직 너무 멉니다. (현재 거리: ${Math.round(dist)}m)`);
+      return;
+    }
+  }
+  // ─────────────────────────────────────────────────────
+
   conquerContext = { spotId, spotName };
   document.getElementById('conquer-place-name').textContent = spotName;
   document.getElementById('conquer-submit-btn').disabled = false;
@@ -326,10 +459,11 @@ function showStampPopup(spotId, spotName) {
   document.getElementById('popup-occupier-label').textContent =
     isMe ? '🟢 내가 점령 중' : '🔴 다른 탐험가가 점령 중';
 
-  // 재점령 버튼: 재점령 컨텍스트 설정
+  // 재점령 버튼: spotsDataCache에서 좌표 조회 후 GPS 체크와 함께 전달
   document.getElementById('popup-reconquer-btn').onclick = () => {
     closeStampPopup();
-    openConquerModal(spotId, spotName);
+    const spotCoords = spotsDataCache[spotId];
+    openConquerModal(spotId, spotName, spotCoords?.lat, spotCoords?.lng);
   };
 
   document.getElementById('stamp-popup').classList.remove('hidden');
@@ -410,7 +544,7 @@ function buildStampHTML(spot) {
   return `
     <div class="stamp-overlay-wrapper" id="wrapper-${spot.id}">
       <div class="stamp-scene" id="scene-${spot.id}"
-           onclick="openConquerModal('${spot.id}', '${safeName}')">
+           onclick="openConquerModal('${spot.id}', '${safeName}', ${spot.lat}, ${spot.lng})">
         <div class="stamp-card" id="card-${spot.id}">
           <div class="stamp-face front">${emoji}</div>
           <div class="stamp-face back" id="back-${spot.id}">${emoji}</div>
@@ -429,6 +563,8 @@ function renderSpotsOnMap(spots) {
   if (!kakaoMap || !spots?.length) return;
 
   spots.forEach(spot => {
+    // 좌표 캐시에 저장 — 재점령 시 GPS 체크에 사용
+    spotsDataCache[spot.id] = { lat: spot.lat, lng: spot.lng };
     const overlay = new kakao.maps.CustomOverlay({
       position: new kakao.maps.LatLng(spot.lat, spot.lng),
       content:  buildStampHTML(spot),
@@ -480,6 +616,9 @@ function initKakaoMap(crewId) {
   });
 
   fetchAndRender(crewId);
+
+  // 지도 진입 시 GPS 감시 시작
+  startGPSWatch();
 }
 
 async function fetchAndRender(crewId) {
@@ -527,6 +666,9 @@ window.addEventListener('DOMContentLoaded', () => {
   switchTab('entry');
 });
 
+// GPS watch 메모리 누수 방지
+window.addEventListener('beforeunload', () => stopGPSWatch());
+
 // ════════════════════════════════════════════════════════
 //  Supabase DB 포인트 동기화 (supabase_init.js 콜백)
 // ════════════════════════════════════════════════════════
@@ -535,6 +677,108 @@ function applyDBPoints(userData) {
   points = userData.points || 0;
   const el = document.getElementById('user-points');
   if (el) el.textContent = points.toLocaleString();
+}
+
+// ════════════════════════════════════════════════════════
+//  마이페이지 렌더링
+// ════════════════════════════════════════════════════════
+async function renderMypage() {
+  // ── 1. Supabase에서 내 유저 데이터 재조회 ─────────────────────────────
+  let myTitle = '비기는 탐험가';  // Supabase 미연동 시 폴백
+  if (window._supabaseReady && window._supabaseClient) {
+    const deviceUUID = localStorage.getItem('device_uuid');
+    if (deviceUUID) {
+      const { data, error } = await window._supabaseClient
+        .from('users')
+        .select('points, title')
+        .eq('id', deviceUUID)
+        .single();
+      if (!error && data) {
+        points  = data.points ?? points;
+        myTitle = data.title  || myTitle;
+        // 포인트 상단 바에도 동기화
+        const topEl = document.getElementById('user-points');
+        if (topEl) topEl.textContent = points.toLocaleString();
+      }
+    }
+  }
+
+  // ── 2. 칭호 + UUID 표시 ────────────────────────────────────────
+  const titleEl = document.getElementById('mypage-title-badge');
+  if (titleEl) titleEl.textContent = myTitle;
+
+  const uuidEl = document.getElementById('mypage-uuid');
+  if (uuidEl && myUserUUID) uuidEl.textContent = `ID: ${myUserUUID.slice(0, 8)}…`;
+
+  // ── 3. 도장 색깔 표시 ───────────────────────────────────────
+  const colorDot     = document.getElementById('mypage-color-dot');
+  const colorPreview = document.getElementById('mypage-color-preview');
+  if (myUserColor) {
+    if (colorDot)     colorDot.style.background = myUserColor;
+    if (colorPreview) colorPreview.style.background = myUserColor;
+  }
+
+  // ── 4. 눈적 포인트 표시 ─────────────────────────────────────
+  const pointsEl = document.getElementById('mypage-points');
+  if (pointsEl) pointsEl.textContent = points.toLocaleString();
+
+  // ── 5. 내가 점령한 도장 수 ───────────────────────────────────
+  const myStampCount = Object.values(stampStateCache)
+    .filter(s => s.user_uuid === myUserUUID).length;
+  const stampCountEl = document.getElementById('mypage-stamp-count');
+  if (stampCountEl) stampCountEl.textContent = myStampCount;
+
+  // ── 6. 크루 이름 ──────────────────────────────────────────────
+  const crewName   = localStorage.getItem('chaeum_crew_name') || '-';
+  const crewNameEl = document.getElementById('mypage-crew-name');
+  if (crewNameEl) crewNameEl.textContent = crewName;
+
+  // ── 7. 크루 점령 현황 (도장별 누가 점령 중인지) ─────────────────
+  _renderCrewStamps();
+}
+
+/**
+ * 크루 점령 현황 — stampStateCache + spotsDataCache 기반으로 렌더링
+ */
+function _renderCrewStamps() {
+  const container = document.getElementById('mypage-crew-stamps');
+  if (!container) return;
+
+  const entries = Object.entries(stampStateCache);
+  if (!entries.length) {
+    container.innerHTML = '<p class="mypage-crew-empty">아직 점령된 도장이 없습니다.</p>';
+    return;
+  }
+
+  container.innerHTML = entries.map(([spotId, state]) => {
+    const labelEl  = document.getElementById(`label-${spotId}`);
+    const spotName = labelEl ? labelEl.textContent : spotId;
+    const isMe     = state.user_uuid === myUserUUID;
+    const badge    = isMe ? '🟢 내가 점령 중' : '🔴 다른 탐험가';
+    return `
+      <div class="mypage-crew-stamp-row">
+        <div class="mypage-crew-stamp-color" style="background:${state.user_color}"></div>
+        <div class="mypage-crew-stamp-info">
+          <span class="mypage-crew-stamp-name">${spotName}</span>
+          <span class="mypage-crew-stamp-badge">${badge}</span>
+        </div>
+        <div class="mypage-crew-stamp-msg">"${state.message}"</div>
+      </div>`;
+  }).join('');
+}
+
+/**
+ * 크루 데이터 리셋 후 진입 화면으로 이동 (새 지도 만들기)
+ */
+function resetAndGoEntry() {
+  if (!confirm('현재 지도에서 나가 새 지도를 만드시겠습니까?')) return;
+  localStorage.removeItem('chaeum_crew_id');
+  localStorage.removeItem('chaeum_crew_code');
+  localStorage.removeItem('chaeum_crew_name');
+  currentCrewId = null;
+  currentCrewCode = null;
+  document.getElementById('bottom-nav').classList.add('hidden');
+  switchTab('entry');
 }
 
 // ════════════════════════════════════════════════════════
