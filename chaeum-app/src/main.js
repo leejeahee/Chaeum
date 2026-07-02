@@ -232,6 +232,17 @@ function switchTab(tabId) {
 
   // 마이페이지 진입 시 데이터 실시간 갱신
   if (tabId === 'mypage') renderMypage();
+  
+  // 카카오맵 탭 진입 시 레이아웃 재계산 (흰 화면 방지)
+  if (tabId === 'map' && kakaoMap) {
+    setTimeout(() => {
+      kakaoMap.relayout();
+      // 기존 위치 유지를 위해 최근 center값으로 panTo를 하거나 내 위치로 리센터
+      if (userLat !== null && userLng !== null) {
+        kakaoMap.panTo(new kakao.maps.LatLng(userLat, userLng));
+      }
+    }, 0);
+  }
 }
 
 // ════════════════════════════════════════════════════════
@@ -600,6 +611,12 @@ function renderSpotsOnMap(spots) {
 //  Kakao Map 초기화
 // ════════════════════════════════════════════════════════
 function initKakaoMap(crewId) {
+  if (typeof kakao === 'undefined' || !kakao.maps) {
+    alert('카카오맵을 불러오지 못했습니다. (도메인 미등록 또는 API 키 오류)');
+    console.error('Kakao Maps API is not loaded.');
+    return;
+  }
+
   const mapContainer = document.getElementById('kakao-map');
   if (!mapContainer) return;
 

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>채움 — 도장깨기 MVP</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <!-- Kakao Maps API: 앱키는 .env VITE_KAKAO_MAP_KEY에서 주입됨 -->
+  <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=%VITE_KAKAO_MAP_KEY%"></script>
+</head>
+<body>
+  <div class="phone-container">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="icons">📶 5G 🔋</span>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN: 진입 화면 (크루 선택)
+         앱 시작 시 가장 먼저 표시
+    ════════════════════════════════════════ -->
+    <div class="screen-content" id="screen-entry">
+      <div class="entry-container">
+
+        <!-- 로고 영역 -->
+        <div class="entry-logo">
+          <div class="logo-icon">🗺️</div>
+          <h1 class="logo-title">채움</h1>
+          <p class="logo-desc">우리만의 분당 도장깨기</p>
+        </div>
+
+        <!-- 버튼 영역 -->
+        <div class="entry-actions">
+          <button class="entry-btn primary-entry-btn" id="btn-create-crew" onclick="handleCreateCrew()">
+            <span class="btn-icon">✨</span>
+            <div class="btn-text-group">
+              <span class="btn-title">새 지도 만들기</span>
+              <span class="btn-desc">초대 코드를 생성하고 친구를 초대해요</span>
+            </div>
+          </button>
+
+          <div class="entry-divider"><span>또는</span></div>
+
+          <div class="invite-input-group">
+            <input
+              type="text"
+              id="invite-code-input"
+              class="invite-input"
+              placeholder="초대 코드 6자리 입력"
+              maxlength="6"
+              oninput="this.value = this.value.toUpperCase()"
+            />
+            <button class="entry-btn secondary-entry-btn" id="btn-join-crew" onclick="handleJoinCrew()">
+              <span class="btn-icon">🔑</span>
+              <div class="btn-text-group">
+                <span class="btn-title">코드로 입장하기</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- 에러 메시지 -->
+        <p class="entry-error hidden" id="entry-error"></p>
+
+        <!-- 로딩 스피너 -->
+        <div class="entry-loading hidden" id="entry-loading">
+          <div class="spinner"></div>
+          <p>지도를 불러오는 중...</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN: 지도 (메인)
+    ════════════════════════════════════════ -->
+    <div class="screen-content hidden" id="screen-map">
+      <!-- 상단 바 -->
+      <div class="map-top-bar">
+        <div class="points-badge">
+          <span class="coin-icon">🍩</span>
+          <span class="points-text" id="user-points">0</span>
+        </div>
+        <!-- 크루 코드 공유 버튼 -->
+        <button class="crew-code-btn" id="crew-code-btn" onclick="showCrewCode()">
+          <span id="crew-name-label">지도</span>
+          <span class="share-icon">🔗</span>
+        </button>
+      </div>
+
+      <!-- 카카오 지도 -->
+      <div id="kakao-map"></div>
+
+      <!-- 장소 추가 모드 안내 배너 -->
+      <div class="add-spot-banner hidden" id="add-spot-banner">
+        <span class="add-spot-banner-icon">📍</span>
+        <span>장소를 추가할 위치를 클릭하세요</span>
+      </div>
+
+      <!-- 장소 추가 FAB (토글) -->
+      <button class="fab-add-spot" id="fab-add-spot" onclick="toggleAddSpotMode()">
+        <span class="fab-icon">＋</span>
+      </button>
+
+      <!-- 내 위치로 (리센터) 버튼 -->
+      <button class="fab-recenter" id="fab-recenter" onclick="recenterMap()" title="내 위치로">
+        🎯
+      </button>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN: 마이페이지
+    ════════════════════════════════════════ -->
+    <div class="screen-content hidden" id="screen-mypage">
+      <div class="mypage-header">
+        <h2 class="mypage-title">마이페이지</h2>
+      </div>
+      <div class="mypage-body">
+
+        <!-- 프로필 카드 -->
+        <div class="mypage-profile-card">
+          <div class="mypage-avatar" id="mypage-avatar">🧭</div>
+          <div class="mypage-profile-info">
+            <p class="mypage-nickname" id="mypage-nickname">탐험가</p>
+            <p class="mypage-uuid" id="mypage-uuid"></p>
+          </div>
+        </div>
+
+        <!-- 스탯 배지 -->
+        <div class="mypage-stats">
+          <div class="mypage-stat-card">
+            <span class="mypage-stat-icon">🍩</span>
+            <span class="mypage-stat-value" id="mypage-points">0</span>
+            <span class="mypage-stat-label">포인트</span>
+          </div>
+          <div class="mypage-stat-card">
+            <span class="mypage-stat-icon">⚔️</span>
+            <span class="mypage-stat-value" id="mypage-stamp-count">0</span>
+            <span class="mypage-stat-label">점령한 도장</span>
+          </div>
+          <div class="mypage-stat-card">
+            <span class="mypage-stat-icon">🏷️</span>
+            <span class="mypage-stat-value" id="mypage-title-badge">초보 탐험가</span>
+            <span class="mypage-stat-label">칭호</span>
+          </div>
+        </div>
+
+        <!-- 크루 정보 -->
+        <div class="mypage-section">
+          <p class="mypage-section-label">현재 지도</p>
+          <div class="mypage-crew-row">
+            <span class="mypage-crew-name" id="mypage-crew-name">-</span>
+            <button class="mypage-crew-share-btn" onclick="showCrewCode()">코드 공유 🔗</button>
+          </div>
+        </div>
+
+        <!-- 액션 버튼 -->
+        <div class="mypage-actions">
+          <button class="mypage-action-btn" onclick="resetAndGoEntry()">
+            <span>🗺️</span> 새 지도 만들기
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         GNB — 지도 화면일 때만 표시
+    ════════════════════════════════════════ -->
+    <div class="bottom-nav hidden" id="bottom-nav">
+      <div class="nav-item active" id="nav-map" onclick="switchTab('map')">
+        <span class="icon">📍</span>
+        <span class="label">지도</span>
+      </div>
+      <div class="nav-item" id="nav-mypage" onclick="switchTab('mypage')">
+        <span class="icon">👤</span>
+        <span class="label">마이페이지</span>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         모달: 크루 코드 공유
+    ════════════════════════════════════════ -->
+    <div class="modal-backdrop hidden" id="crew-modal-backdrop" onclick="closeCrewModal()">
+      <div class="crew-modal" onclick="event.stopPropagation()">
+        <div class="crew-modal-emoji">🎉</div>
+        <h3 class="crew-modal-title">우리 지도 초대 코드</h3>
+        <p class="crew-modal-desc">친구에게 아래 코드를 공유하세요!</p>
+        <div class="crew-code-display" id="crew-code-display">------</div>
+        <button class="copy-btn" onclick="copyCrewCode()">코드 복사하기 📋</button>
+        <button class="modal-close-btn" onclick="closeCrewModal()">닫기</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         모달: 점령하기 (다크소울 방명록)
+    ════════════════════════════════════════ -->
+    <div class="modal-backdrop hidden" id="conquer-modal-backdrop" onclick="closeConquerModal()">
+      <div class="conquer-modal" onclick="event.stopPropagation()">
+        <!-- 헤더 -->
+        <div class="conquer-modal-header">
+          <div class="conquer-sword-icon">⚔️</div>
+          <h3 class="conquer-modal-title">이 장소를 점령하시겠습니까?</h3>
+          <p class="conquer-place-name" id="conquer-place-name">장소명</p>
+        </div>
+
+        <!-- 드롭다운 조합형 메시지 -->
+        <div class="combo-message-builder">
+          <p class="combo-label">방명록 메시지를 조합하세요</p>
+          <div class="combo-row">
+            <!-- 1번째 선택 -->
+            <select class="combo-select" id="combo-1">
+              <option value="이 앞">이 앞</option>
+              <option value="여기">여기</option>
+            </select>
+            <!-- 2번째 선택 -->
+            <select class="combo-select" id="combo-2">
+              <option value="JMT">JMT</option>
+              <option value="사장님 텐션">사장님 텐션</option>
+              <option value="웨이팅">웨이팅</option>
+              <option value="에어컨 직빵 자리">에어컨 직빵 자리</option>
+            </select>
+            <!-- 3번째 선택 -->
+            <select class="combo-select" id="combo-3">
+              <option value="있다">있다</option>
+              <option value="조심해라">조심해라</option>
+              <option value="미쳤다">미쳤다</option>
+            </select>
+          </div>
+          <!-- 미리보기 -->
+          <div class="combo-preview" id="combo-preview">
+            "이 앞 JMT 있다"
+          </div>
+        </div>
+
+        <!-- 점령 버튼 -->
+        <button class="conquer-btn" id="conquer-submit-btn" onclick="submitConquer()">
+          <span>⚔️ 점령하기</span>
+        </button>
+        <button class="modal-close-btn" onclick="closeConquerModal()">취소</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         모달: 장소 이름 입력
+    ════════════════════════════════════════ -->
+    <div class="modal-backdrop hidden" id="add-spot-modal-backdrop" onclick="cancelAddSpotName()">
+      <div class="add-spot-modal" onclick="event.stopPropagation()">
+        <div class="add-spot-emoji">📍</div>
+        <h3 class="add-spot-title">장소 이름을 입력하세요</h3>
+        <input
+          type="text"
+          id="add-spot-name-input"
+          class="add-spot-input"
+          placeholder="예: 우리 단골 카페"
+          maxlength="20"
+        />
+        <button class="add-spot-confirm-btn" id="add-spot-confirm-btn" onclick="submitNewSpot()">✅ 추가하기</button>
+        <button class="modal-close-btn" onclick="cancelAddSpotName()">취소</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         팝업: 점령된 도장 방명록 보기
+    ════════════════════════════════════════ -->
+    <div class="stamp-popup hidden" id="stamp-popup" onclick="closeStampPopup()">
+      <div class="stamp-popup-inner" onclick="event.stopPropagation()">
+        <div class="popup-skull">💀</div>
+        <p class="popup-place-name" id="popup-place-name">장소명</p>
+        <div class="popup-message-bubble" id="popup-message-bubble">메시지</div>
+        <p class="popup-occupier-label" id="popup-occupier-label">점령 중</p>
+        <button class="popup-reconquer-btn" id="popup-reconquer-btn" onclick="reopenConquerFromPopup()">⚔️ 재점령하기</button>
+        <button class="popup-close-btn" onclick="closeStampPopup()">닫기</button>
+      </div>
+    </div>
+
+  </div><!-- /.phone-container -->
+
+  <!-- Vite ES Module 엔트리포인트 -->
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
