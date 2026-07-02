@@ -574,7 +574,7 @@ function buildStampHTML(spot) {
         <!-- 레이어1: 바닥 뱃지 -->
         <img class="badge-img" id="badge-${spot.id}" src="/icon-badge-black.png" alt="badge" />
         <!-- 레이어2: 공중 3D 도장 무기 -->
-        <img class="stamp-weapon" id="weapon-${spot.id}" src="/stamp-flipped.png" alt="stamp" />
+        <img class="stamp-weapon" id="weapon-${spot.id}" src="/stamp-idle-angled.png" alt="stamp" />
         <!-- 레이어3: 먼지 파티클 캔버스 (씬 크기보다 넉넉하게) -->
         <canvas class="dust-canvas" id="canvas-${spot.id}" width="140" height="140"></canvas>
       </div>
