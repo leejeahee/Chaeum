@@ -449,6 +449,12 @@ function _applyConqueredState(spotId, spotName, message, userColor, userUuid, sk
   } else {
     // 슬램 애니메이션 트리거
     scene?.classList.add('is-slamming');
+    
+    // 도장이 바닥에 닿는 순간(전체 0.5초 중 40% = 0.2초)에 맞춰 먼지 파티클 재생
+    setTimeout(() => {
+      playDustEffect(spotId);
+    }, 200);
+
     setTimeout(() => {
       badge.src = '/icon-badge-blue.png';
       badge.classList.add('is-captured');
@@ -457,6 +463,8 @@ function _applyConqueredState(spotId, spotName, message, userColor, userUuid, sk
       showToast(`⚔️ ${spotName} 점령 완료! +100 포인트`);
     }, 500);
   }
+
+  // ... (라벨 스타일 등 변경) ...
 
   wrapper?.classList.add('conquered');
   if (label) label.classList.add('conquered');
@@ -563,14 +571,89 @@ function buildStampHTML(spot) {
     <div class="stamp-overlay-wrapper" id="wrapper-${spot.id}">
       <div class="stamp-scene" id="scene-${spot.id}"
            onclick="openConquerModal('${spot.id}', '${safeName}', ${spot.lat}, ${spot.lng})">
-        <!-- 레이어1: 바닥 뱃지 (미점령=검정, 점령=파란) -->
+        <!-- 레이어1: 바닥 뱃지 -->
         <img class="badge-img" id="badge-${spot.id}" src="/icon-badge-black.png" alt="badge" />
-        <!-- 레이어2: 공중 도장 무기 (슬램 애니메이션 시에만 등장) -->
-        <img class="stamp-weapon" id="weapon-${spot.id}" src="/stamp-flipped.png" alt="stamp" />
+        <!-- 레이어2: 공중 3D 도장 무기 -->
+        <img class="stamp-weapon" id="weapon-${spot.id}" src="/stamp-3d.png" alt="stamp" />
+        <!-- 레이어3: 먼지 파티클 캔버스 (씬 크기보다 넉넉하게) -->
+        <canvas class="dust-canvas" id="canvas-${spot.id}" width="140" height="140"></canvas>
       </div>
       <div class="${labelClass}" id="label-${spot.id}">${spot.name}</div>
     </div>
   `;
+}
+
+// ════════════════════════════════════════════════════════
+//  먼지 파티클 이펙트 (Canvas)
+// ════════════════════════════════════════════════════════
+function playDustEffect(spotId) {
+  const canvas = document.getElementById(`canvas-${spotId}`);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  const width = canvas.width;
+  const height = canvas.height;
+  const cx = width / 2;
+  const cy = height / 2 + 10; // 도장 닿는 위치(뱃지 중심보다 살짝 아래)
+
+  const particles = [];
+  const numParticles = 25; // 파티클 개수
+
+  for (let i = 0; i < numParticles; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    // 충격파처럼 방사형으로 퍼지는 속도
+    const speed = Math.random() * 4 + 2; 
+    particles.push({
+      x: cx,
+      y: cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed * 0.5 - (Math.random() * 2), // y축은 살짝 눌린 타원형 + 위로 튀어오르는 성질
+      radius: Math.random() * 4 + 2,
+      life: 1.0,
+      decay: Math.random() * 0.03 + 0.02,
+      color: Math.random() > 0.5 ? 'rgba(230,230,230,' : 'rgba(200,200,210,' // 회백색 먼지
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+    let active = false;
+
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      if (p.life > 0) {
+        active = true;
+        p.x += p.vx;
+        p.y += p.vy;
+        
+        // 마찰력 (속도 감속)
+        p.vx *= 0.92;
+        p.vy *= 0.92;
+        
+        // 서서히 위로 떠오르는 효과 (중력 반대)
+        p.vy -= 0.1;
+        
+        // 크기가 커지면서 투명해짐
+        p.radius += 0.2;
+        p.life -= p.decay;
+
+        if (p.life > 0) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = p.color + p.life + ')';
+          ctx.fill();
+        }
+      }
+    }
+
+    if (active) {
+      requestAnimationFrame(animate);
+    } else {
+      ctx.clearRect(0, 0, width, height); // 깔끔하게 지우기
+    }
+  }
+
+  animate();
 }
 
 // ════════════════════════════════════════════════════════

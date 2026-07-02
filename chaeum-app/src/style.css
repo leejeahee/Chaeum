@@ -543,6 +543,16 @@ p { color: var(--text-secondary); }
   z-index: 2;
 }
 
+/* 레이어3: 먼지 파티클 캔버스 */
+.dust-canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 3;
+}
+
 /* ─────────────────────────────────────
    슬램 타격 키프레임 (0.5s)
    비스듬히 위 → 급가속 → 타격(+13px) → 바운스 → 올라가며 사라짐
