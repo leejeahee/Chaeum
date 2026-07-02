@@ -568,7 +568,7 @@ p { color: var(--text-secondary); }
   }
   40% {
     /* 타격 — 파란 면이 배지 정중앙 */
-    transform: translate(-50%, 13px) rotate(0deg) scale(1);
+    transform: translate(-50%, 16px) rotate(0deg) scale(1);
     opacity: 1;
   }
   58% {
