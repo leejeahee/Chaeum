@@ -496,7 +496,7 @@ p { color: var(--text-secondary); }
   align-items: center;
 }
 
-/* 마커 쓰인 영역 — badge + weapon이 동일 좌표에 갹쳐진 */
+/* 마커 씬 — overflow visible: 위에서 들어오는 무기가 씬 밖에서도 보임 */
 .stamp-scene {
   width: 64px;
   height: 64px;
@@ -505,9 +505,10 @@ p { color: var(--text-secondary); }
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: visible;
 }
 
-/* 레이어1: 바닥 뇵지 (미점령=검정, 점령=파란) */
+/* 레이어1: 바닥 뱃지 (미점령=검정, 점령=파란) */
 .badge-img {
   width: 52px;
   height: 52px;
@@ -515,67 +516,84 @@ p { color: var(--text-secondary); }
   display: block;
   filter: drop-shadow(0 4px 10px rgba(0,0,0,0.25));
   transition: transform 0.15s ease;
+  position: relative;
+  z-index: 1;
 }
 
-/* 점령 완료 바닥 뇵지 */
+/* 점령 완료 뱃지 */
 .badge-img.is-captured {
   filter: drop-shadow(0 4px 14px rgba(41,121,255,0.45));
 }
 
-/* 레이어2: 공중 도장 무기 — 평시에는 안 보임 */
+/* 레이어2: 공중 도장 무기
+   stamp-flipped.png의 파란 도장 면은 이미지 하단 43% 지점.
+   72px 이미지 기준 파란 면 중심 ≈ y+13px 오프셋.
+   타격 최종 위치 translateY(+13px) → 배지 중앙에 정확히 일치. */
 .stamp-weapon {
-  width: 60px;
-  height: 60px;
+  width: 72px;
+  height: 72px;
   object-fit: contain;
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -80px);
+  transform: translate(-50%, -110px) rotate(-20deg) scale(0.7);
   opacity: 0;
   pointer-events: none;
-  filter: drop-shadow(0 6px 16px rgba(0,0,0,0.35));
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,0.45));
+  z-index: 2;
 }
 
-/* ────────────────────
-   슬램 타격 키프레임
-──────────────────── */
-
-/* 도장 무기: 위에서 빠르게 꼴힌다가 투명하게 사라집 */
+/* ─────────────────────────────────────
+   슬램 타격 키프레임 (0.5s)
+   비스듬히 위 → 급가속 → 타격(+13px) → 바운스 → 올라가며 사라짐
+───────────────────────────────────── */
 @keyframes stamp-slam {
-  0%   { transform: translate(-50%, -80px); opacity: 0; }
-  30%  { transform: translate(-50%, 0px);  opacity: 1; }
-  55%  { transform: translate(-50%, 0px);  opacity: 1; }
-  100% { transform: translate(-50%, 0px);  opacity: 0; }
+  0% {
+    transform: translate(-50%, -110px) rotate(-20deg) scale(0.7);
+    opacity: 0;
+  }
+  22% {
+    transform: translate(-50%, -8px) rotate(-4deg) scale(1.08);
+    opacity: 1;
+  }
+  40% {
+    /* 타격 — 파란 면이 배지 정중앙 */
+    transform: translate(-50%, 13px) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  58% {
+    transform: translate(-50%, 3px) rotate(4deg) scale(0.97);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -55px) rotate(-12deg) scale(0.75);
+    opacity: 0;
+  }
 }
 
-/* 뇵지: 도장이 닿는 순간 살짝 스쿠레지다 복구 */
+/* 배지: 타격(40%)에 맞춰 squish */
 @keyframes badge-squish {
   0%   { transform: scale(1); }
-  30%  { transform: scale(0.88) scaleY(0.9); }
-  55%  { transform: scale(1.06); }
+  40%  { transform: scale(0.80) scaleY(0.84); }
+  58%  { transform: scale(1.10); }
+  72%  { transform: scale(0.96); }
   100% { transform: scale(1); }
 }
 
 .stamp-scene.is-slamming .stamp-weapon {
-  animation: stamp-slam 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  animation: stamp-slam 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 .stamp-scene.is-slamming .badge-img {
-  animation: badge-squish 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  animation: badge-squish 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
-/* ────────────────────
-   언터큰 클릭 시 스케일
-──────────────────── */
+/* 클릭 시 살짝 눌림 */
 .stamp-scene:active .badge-img {
   transform: scale(0.93);
 }
 
-/* ────────────────────
-   점령된 도장 시각 강조
-──────────────────── */
-
-/* 점령된 라벨 */
+/* 장소명 라벨 */
 .stamp-label {
   position: absolute;
   top: 100%;
@@ -611,6 +629,7 @@ p { color: var(--text-secondary); }
 .stamp-overlay-wrapper.conquered .stamp-scene {
   filter: drop-shadow(0 4px 16px rgba(41,121,255,0.4));
 }
+
 
 /* ════════════════════════════════════════
    토스트 메시지

@@ -92,14 +92,26 @@ function startGPSWatch() {
       userLat = pos.coords.latitude;
       userLng = pos.coords.longitude;
       console.log(`[Chaeum GPS] 위치 업데이트: ${userLat.toFixed(5)}, ${userLng.toFixed(5)}`);
-      _updateMyLocationDot(); // 블루 돇 위치 갱신
+
+      // GPS 최초 수신 시 상태 전이 + 지도 자동 이동
+      if (gpsState !== 'ok') {
+        gpsState = 'ok';
+        if (kakaoMap) {
+          kakaoMap.panTo(new kakao.maps.LatLng(userLat, userLng));
+        }
+      }
+
+      _updateMyLocationDot(); // 블루 닷 위치 갱신
     },
     (err) => {
       if (err.code === GeolocationPositionError.PERMISSION_DENIED) {
+        gpsState = 'denied';
         showToast('📍 위치 권한을 허용해야 도장을 찍을 수 있습니다.');
       } else if (err.code === GeolocationPositionError.TIMEOUT) {
+        gpsState = 'error';
         console.warn('[Chaeum GPS] 위치 요청 타임아웃');
       } else {
+        gpsState = 'error';
         console.warn('[Chaeum GPS] 위치 오류:', err.message);
       }
     },
