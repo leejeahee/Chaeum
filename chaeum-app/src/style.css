@@ -559,24 +559,24 @@ p { color: var(--text-secondary); }
 ───────────────────────────────────── */
 @keyframes stamp-slam {
   0% {
-    transform: translate(-50%, -110px) rotate(-20deg) scale(0.7);
+    transform: translate(-50%, -130px) rotate(-20deg) scale(0.7);
     opacity: 0;
   }
   22% {
-    transform: translate(-50%, -8px) rotate(-4deg) scale(1.08);
+    transform: translate(-50%, -44px) rotate(-4deg) scale(1.08);
     opacity: 1;
   }
   40% {
-    /* 타격 — 파란 면이 배지 정중앙 */
-    transform: translate(-50%, 16px) rotate(0deg) scale(1);
+    /* 타격 — 파란 면이 배지 정중앙 (위치를 더 올리기 위해 translateY 감소) */
+    transform: translate(-50%, -22px) rotate(0deg) scale(1);
     opacity: 1;
   }
   58% {
-    transform: translate(-50%, 3px) rotate(4deg) scale(0.97);
+    transform: translate(-50%, -32px) rotate(4deg) scale(0.97);
     opacity: 0.9;
   }
   100% {
-    transform: translate(-50%, -55px) rotate(-12deg) scale(0.75);
+    transform: translate(-50%, -90px) rotate(-12deg) scale(0.75);
     opacity: 0;
   }
 }
