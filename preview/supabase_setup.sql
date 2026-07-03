@@ -99,3 +99,35 @@ CREATE INDEX IF NOT EXISTS idx_stamps_spot_latest
 --   (기존 DB에서는 이 두 줄만 SQL Editor에서 실행하면 됨)
 ALTER PUBLICATION supabase_realtime ADD TABLE public.stamps;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.spots;
+
+-- ── 7. 연속 셀프 재점령 방지 트리거 ────────────────────
+--   "다크소울 방명록" 룰: 뺏겼던 곳을 되찾는 재탈환은 항상 허용해야 하므로
+--   UNIQUE(spot_id, user_uuid) 제약은 사용하지 않는다.
+--   대신 해당 spot_id의 "가장 최근 기록"(현재 점령자)의 user_uuid가
+--   지금 INSERT하려는 user_uuid와 같을 때만 차단한다.
+--   (기존 DB에서는 이 블록만 SQL Editor에서 실행하면 됨)
+CREATE OR REPLACE FUNCTION public.prevent_self_reconquer()
+RETURNS TRIGGER AS $$
+DECLARE
+  latest_uuid TEXT;
+BEGIN
+  SELECT user_uuid INTO latest_uuid
+  FROM public.stamps
+  WHERE spot_id = NEW.spot_id
+  ORDER BY created_at DESC
+  LIMIT 1;
+
+  IF latest_uuid IS NOT NULL AND latest_uuid = NEW.user_uuid THEN
+    RAISE EXCEPTION '이미 본인이 점령 중인 장소입니다. (spot_id: %)', NEW.spot_id
+      USING ERRCODE = 'P0001';
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trg_prevent_self_reconquer ON public.stamps;
+CREATE TRIGGER trg_prevent_self_reconquer
+  BEFORE INSERT ON public.stamps
+  FOR EACH ROW
+  EXECUTE FUNCTION public.prevent_self_reconquer();

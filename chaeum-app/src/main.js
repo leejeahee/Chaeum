@@ -340,6 +340,14 @@ function copyCrewCode() {
 //  점령 모달 열기 / 닫기
 // ════════════════════════════════════════════════════════
 function openConquerModal(spotId, spotName, spotLat, spotLng) {
+  // ── 셀프 재점령 차단 (어뷰징 방지) ────────────────────────
+  const existing = stampStateCache[spotId];
+  if (existing && existing.user_uuid === myUserUUID) {
+    showToast('✋ 이미 내가 점령한 장소입니다!');
+    return;
+  }
+  // ─────────────────────────────────────────────────────────
+
   // ── GPS 50m Locking 체크 ──────────────────────────────
   if (spotLat !== undefined && spotLng !== undefined) {
     if (userLat === null || userLng === null) {
@@ -468,7 +476,14 @@ function _applyConqueredState(spotId, spotName, message, userColor, userUuid, sk
 
   wrapper?.classList.add('conquered');
   if (label) label.classList.add('conquered');
-  scene?.setAttribute('onclick', `showStampPopup('${spotId}', '${spotName.replace(/'/g, "\'")}')` );
+
+  // ── 내가 점령한 마커면 재점령 진입 자체를 막고, 다른 사람 것만 팝업 오픈 ──
+  if (scene) {
+    const isMe = userUuid === myUserUUID;
+    scene.onclick = isMe
+      ? () => showToast('✋ 이미 내가 점령한 장소입니다!')
+      : () => showStampPopup(spotId, spotName);
+  }
 }
 
 // ════════════════════════════════════════════════════════
