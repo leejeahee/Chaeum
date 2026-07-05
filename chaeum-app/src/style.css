@@ -17,42 +17,24 @@
 }
 
 body {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background-color: var(--surface-color);
   min-height: 100vh;
+  min-height: 100dvh;
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
   -webkit-font-smoothing: antialiased;
+  overflow: hidden;
 }
 
 .phone-container {
-  width: 375px;
-  height: 812px;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   background-color: var(--surface-color);
-  border-radius: 40px;
-  border: 12px solid #1a1a2e;
   position: relative;
   overflow: hidden;
-  box-shadow:
-    0 30px 80px rgba(0,0,0,0.5),
-    0 0 0 1px rgba(255,255,255,0.05),
-    inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
-.status-bar {
-  display: flex;
-  justify-content: space-between;
-  padding: 14px 24px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #000;
-  z-index: 100;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  pointer-events: none;
-}
+
 
 /* ════════════════════════════════════════
    Screen Layout
@@ -392,7 +374,6 @@ p { color: var(--text-secondary); }
   align-items: flex-start;
   padding-top: 12px;
   border-top: 1px solid var(--border-color);
-  border-radius: 0 0 32px 32px;
   z-index: 50;
 }
 .nav-item {
